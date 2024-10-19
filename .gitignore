@@ -31,5 +31,4 @@ build/
 
 ### VS Code ###
 .vscode/
-/src/main/resources/api-token.txt
-/src/main/java/ru/baldursgate3/tgbot/bot/Constants.java
+/src/main/java/ru/baldursgate3/tgbot/bot/Constant.java
