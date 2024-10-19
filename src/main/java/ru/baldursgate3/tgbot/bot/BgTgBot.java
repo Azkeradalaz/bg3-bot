@@ -11,7 +11,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-
 @Component
 public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
     private final TelegramClient telegramClient;
@@ -23,7 +22,7 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
     @SneakyThrows
     @Override
     public String getBotToken() {
-        return Constants.API_TOKEN;
+        return Constant.API_TOKEN;
     }
 
     @Override
@@ -34,14 +33,15 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
     @Override
     public void consume(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-            String message_text = update.getMessage().getText();
-            long chat_id = update.getMessage().getChatId();
+            String messageText = update.getMessage().getText();
+            long chatId = update.getMessage().getChatId();
 
             SendMessage message = SendMessage
                     .builder()
-                    .chatId(chat_id)
-                    .text(message_text)
+                    .chatId(chatId)
+                    .text(messageText)
                     .build();
+
             try {
                 telegramClient.execute(message);
             } catch (TelegramApiException e) {
@@ -49,6 +49,4 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
             }
         }
     }
-
-
 }
