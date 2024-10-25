@@ -40,19 +40,14 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
             User user = update.getMessage().getFrom();
-            String responceMessage = restTemplateService.getUser(user.getId());
+            String responceMessage = restTemplateService.getUserByTgId(user.getId());
 
             SendMessage message = null;
 
-            if(!responceMessage.isBlank()){
-                message = SendMessage.builder().chatId(chatId).text("Пользователь с ID:" + user.getId()).build();
+            if(responceMessage==null){
+                message = SendMessage.builder().chatId(chatId).text("Представьтесь, пожалуйста.").build();
             }
 
-//            message = SendMessage
-//                    .builder()
-//                    .chatId(chatId)
-//                    .text("User info: " + user)
-//                    .build();
 
             try {
                 telegramClient.execute(message);

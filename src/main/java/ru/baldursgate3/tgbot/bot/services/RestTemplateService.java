@@ -19,4 +19,8 @@ public class RestTemplateService {
         request.put("tgUserId", tgId.toString());
         return restTemplate.getForObject(url, String.class, request);
     }
+    public String getUserByTgId(Long tgId) {
+        String url = Constant.HOST +"/user/tgid/"+tgId;
+        return restTemplate.getForObject(url,String.class);
+    }
 }
