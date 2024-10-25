@@ -33,4 +33,5 @@ public class RestTemplateService {
         user.setName(name);
         return restTemplate.postForObject(url, user, String.class);
     }
+
 }
