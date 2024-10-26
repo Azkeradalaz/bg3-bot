@@ -32,9 +32,9 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
     private final TelegramClient telegramClient;
     private final RestTemplateService restTemplateService;
 
-    private Set<Long> toRegister = new HashSet<>();
-    private Map<Long, String> activeUser = new HashMap<>();
-    private Map<Long, GameCharacter> activeGameCharacter = new HashMap<>();
+    private final Set<Long> toRegister = new HashSet<>();
+    private final Map<Long, String> activeUser = new HashMap<>();
+    private final Map<Long, GameCharacter> activeGameCharacter = new HashMap<>();
 
     public BgTgBot(RestTemplateService restTemplateService) {
         this.restTemplateService = restTemplateService;
@@ -70,20 +70,23 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
                         .replyMarkup(InlineKeyboardMarkup
                                 .builder()
                                 .keyboardRow(new InlineKeyboardRow(
-                                        InlineKeyboardButton
-                                                .builder()
-                                                .text("Создать нового персонажа")
-                                                .callbackData("createNewGameCharacter")
-                                                .build()
-                                ))
+                                                InlineKeyboardButton
+                                                        .builder()
+                                                        .text("Создать нового персонажа")
+                                                        .callbackData("createNewGameCharacter")
+                                                        .build()
+                                        )
+                                )
                                 .keyboardRow(new InlineKeyboardRow(
-                                        InlineKeyboardButton
-                                                .builder()
-                                                .text("Показать сохраненных персонажей")
-                                                .callbackData("getGameCharacterList")
-                                                .build()
-                                ))
-                                .build())
+                                                InlineKeyboardButton
+                                                        .builder()
+                                                        .text("Показать сохраненных персонажей")
+                                                        .callbackData("getGameCharacterList")
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                        )
                         .build();
             } else if (!activeUser.containsKey(user.getId())) {
                 if (toRegister.contains(user.getId())) {
@@ -103,18 +106,49 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
             } catch (TelegramApiException e) {
                 e.printStackTrace();
             }
+
         } else if (update.hasCallbackQuery()) {
             String callData = update.getCallbackQuery().getData();
             long messageId = update.getCallbackQuery().getMessage().getMessageId();
             long chatId = update.getCallbackQuery().getMessage().getChatId();
+            User user = update.getMessage().getFrom();
             EditMessageText newMessage = null;
-            String answer = null;
+            String answer = "";
+
             if (callData.equals("createNewGameCharacter")) {
-                answer = "Создаём персонажа";
+                answer = "Выберите имя и характеристики персонажа";
+                activeGameCharacter.put(user.getId(), new GameCharacter());
                 newMessage = EditMessageText.builder()
                         .chatId(chatId)
                         .messageId(toIntExact(messageId))
                         .text(answer)
+                        .replyMarkup(InlineKeyboardMarkup
+                                .builder()
+                                .keyboardRow(new InlineKeyboardRow(
+                                        new InlineKeyboardButton("CИЛ")
+                                ))
+                                .keyboardRow(
+                                        new InlineKeyboardRow(
+                                                InlineKeyboardButton
+                                                        .builder()
+                                                        .text("-")
+                                                        .callbackData("strMinus")
+                                                        .build(),
+                                                InlineKeyboardButton
+                                                        .builder()
+                                                        .text("10")
+                                                        .callbackData("strManual")
+                                                        .build(),
+                                                InlineKeyboardButton
+                                                        .builder()
+                                                        .text("+")
+                                                        .callbackData("strMinus")
+                                                        .build()
+                                        )
+                                )
+
+                                .build()
+                        )
                         .build();
 
             } else if (callData.equals("getGameCharacterList")) {
