@@ -32,3 +32,4 @@ build/
 ### VS Code ###
 .vscode/
 /src/main/java/ru/baldursgate3/tgbot/bot/Constant.java
+/src/main/java/ru/baldursgate3/tgbot/bot/conts/Constant.java

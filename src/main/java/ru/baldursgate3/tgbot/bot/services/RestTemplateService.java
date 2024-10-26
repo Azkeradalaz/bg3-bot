@@ -3,7 +3,7 @@ package ru.baldursgate3.tgbot.bot.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import ru.baldursgate3.tgbot.bot.Constant;
+import ru.baldursgate3.tgbot.bot.conts.Constant;
 import ru.baldursgate3.tgbot.bot.entities.User;
 
 import java.util.HashMap;
