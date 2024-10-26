@@ -95,12 +95,7 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
                 } else if (responseMessage == null) {
                     message = SendMessage.builder().chatId(chatId).text("Представьтесь, пожалуйста.").build();
                     toRegister.add(user.getId());
-                } else {
-                    message = SendMessage.builder().chatId(chatId).text("Ошибка.").build();
                 }
-
-            } else {
-                message = SendMessage.builder().chatId(chatId).text("Доступные команды.").build();
             }
 
             try {
