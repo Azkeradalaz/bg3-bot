@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static java.lang.Math.toIntExact;
 
 @Component
 public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
@@ -111,38 +110,99 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
             String callData = update.getCallbackQuery().getData();
             long messageId = update.getCallbackQuery().getMessage().getMessageId();
             long chatId = update.getCallbackQuery().getMessage().getChatId();
-            User user = update.getMessage().getFrom();
             EditMessageText newMessage = null;
             String answer = "";
+            SendMessage message = null;
 
             if (callData.equals("createNewGameCharacter")) {
                 answer = "Выберите имя и характеристики персонажа";
-                activeGameCharacter.put(user.getId(), new GameCharacter());
-                newMessage = EditMessageText.builder()
+                message = SendMessage.builder()
                         .chatId(chatId)
-                        .messageId(toIntExact(messageId))
                         .text(answer)
                         .replyMarkup(InlineKeyboardMarkup
                                 .builder()
-                                .keyboardRow(new InlineKeyboardRow(
-                                        new InlineKeyboardButton("CИЛ")
-                                ))
+                                .keyboardRow(new InlineKeyboardRow())
                                 .keyboardRow(
                                         new InlineKeyboardRow(
                                                 InlineKeyboardButton
                                                         .builder()
-                                                        .text("-")
-                                                        .callbackData("strMinus")
+                                                        .text("Имя")
+                                                        .callbackData("setStr")
+                                                        .build(),
+                                                InlineKeyboardButton
+                                                        .builder()
+                                                        .text("Тав")
+                                                        .callbackData("setStr")
+                                                        .build()
+                                        )
+                                )
+                                .keyboardRow(
+                                        new InlineKeyboardRow(
+                                                InlineKeyboardButton
+                                                        .builder()
+                                                        .text("ЛОВ")
+                                                        .callbackData("setDex")
                                                         .build(),
                                                 InlineKeyboardButton
                                                         .builder()
                                                         .text("10")
-                                                        .callbackData("strManual")
+                                                        .callbackData("setDex")
+                                                        .build()
+                                        )
+                                )
+                                .keyboardRow(
+                                        new InlineKeyboardRow(
+                                                InlineKeyboardButton
+                                                        .builder()
+                                                        .text("ВЫН")
+                                                        .callbackData("setCon")
                                                         .build(),
                                                 InlineKeyboardButton
                                                         .builder()
-                                                        .text("+")
-                                                        .callbackData("strMinus")
+                                                        .text("10")
+                                                        .callbackData("setCon")
+                                                        .build()
+                                        )
+                                )
+                                .keyboardRow(
+                                        new InlineKeyboardRow(
+                                                InlineKeyboardButton
+                                                        .builder()
+                                                        .text("ИНТ")
+                                                        .callbackData("setInt")
+                                                        .build(),
+                                                InlineKeyboardButton
+                                                        .builder()
+                                                        .text("10")
+                                                        .callbackData("setInt")
+                                                        .build()
+                                        )
+                                )
+                                .keyboardRow(
+                                        new InlineKeyboardRow(
+                                                InlineKeyboardButton
+                                                        .builder()
+                                                        .text("МУД")
+                                                        .callbackData("setWis")
+                                                        .build(),
+                                                InlineKeyboardButton
+                                                        .builder()
+                                                        .text("10")
+                                                        .callbackData("setWis")
+                                                        .build()
+                                        )
+                                )
+                                .keyboardRow(
+                                        new InlineKeyboardRow(
+                                                InlineKeyboardButton
+                                                        .builder()
+                                                        .text("ХАР")
+                                                        .callbackData("setCha")
+                                                        .build(),
+                                                InlineKeyboardButton
+                                                        .builder()
+                                                        .text("10")
+                                                        .callbackData("setCha")
                                                         .build()
                                         )
                                 )
@@ -153,15 +213,14 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
 
             } else if (callData.equals("getGameCharacterList")) {
                 answer = "Получаем список персонажей";
-                newMessage = EditMessageText.builder()
+                message = SendMessage.builder()
                         .chatId(chatId)
-                        .messageId(toIntExact(messageId))
                         .text(answer)
                         .build();
 
             }
             try {
-                telegramClient.execute(newMessage);
+                telegramClient.execute(message);
             } catch (TelegramApiException e) {
                 e.printStackTrace();
             }
