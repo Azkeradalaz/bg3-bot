@@ -110,6 +110,7 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
             String callData = update.getCallbackQuery().getData();
             long messageId = update.getCallbackQuery().getMessage().getMessageId();
             long chatId = update.getCallbackQuery().getMessage().getChatId();
+            long userId = update.getCallbackQuery().getMessage().getChat().getId();
             EditMessageText newMessage = null;
             String answer = "";
             SendMessage message = null;
@@ -127,11 +128,25 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
                                                 InlineKeyboardButton
                                                         .builder()
                                                         .text("Имя")
-                                                        .callbackData("setStr")
+                                                        .callbackData("setCharName")
                                                         .build(),
                                                 InlineKeyboardButton
                                                         .builder()
                                                         .text("Тав")
+                                                        .callbackData("setCharName")
+                                                        .build()
+                                        )
+                                )
+                                .keyboardRow(
+                                        new InlineKeyboardRow(
+                                                InlineKeyboardButton
+                                                        .builder()
+                                                        .text("СИЛ")
+                                                        .callbackData("setStr")
+                                                        .build(),
+                                                InlineKeyboardButton
+                                                        .builder()
+                                                        .text("10")
                                                         .callbackData("setStr")
                                                         .build()
                                         )
@@ -211,7 +226,56 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
                         )
                         .build();
 
-            } else if (callData.equals("getGameCharacterList")) {
+            } else if (callData.equals("setCharName")) {
+                answer = "Введите имя персонажа:";
+                message = SendMessage.builder()
+                        .chatId(chatId)
+                        .text(answer)
+                        .build();
+
+            } else if (callData.equals("setStr")) {
+                answer = "Введите покатель силы:";
+                message = SendMessage.builder()
+                        .chatId(chatId)
+                        .text(answer)
+                        .build();
+
+            } else if (callData.equals("setDex")) {
+                answer = "Введите покатель ловкости:";
+                message = SendMessage.builder()
+                        .chatId(chatId)
+                        .text(answer)
+                        .build();
+
+            } else if (callData.equals("setCon")) {
+                answer = "Введите покатель выносливости:";
+                message = SendMessage.builder()
+                        .chatId(chatId)
+                        .text(answer)
+                        .build();
+
+            } else if (callData.equals("setInt")) {
+                answer = "Введите покатель интеллекта:";
+                message = SendMessage.builder()
+                        .chatId(chatId)
+                        .text(answer)
+                        .build();
+
+            } else if (callData.equals("setWis")) {
+                answer = "Введите покатель мудрости:";
+                message = SendMessage.builder()
+                        .chatId(chatId)
+                        .text(answer)
+                        .build();
+
+            } else if (callData.equals("setCha")) {
+                answer = "Введите покатель харизмы:";
+                message = SendMessage.builder()
+                        .chatId(chatId)
+                        .text(answer)
+                        .build();
+
+            }else if (callData.equals("getGameCharacterList")) {
                 answer = "Получаем список персонажей";
                 message = SendMessage.builder()
                         .chatId(chatId)
