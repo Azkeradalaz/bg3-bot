@@ -16,7 +16,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
-import ru.baldursgate3.tgbot.bot.conts.Constant;
 import ru.baldursgate3.tgbot.bot.entities.GameCharacter;
 import ru.baldursgate3.tgbot.bot.services.RestTemplateService;
 
@@ -42,7 +41,7 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
 
     @Override
     public String getBotToken() { //TODO
-        return Constant.API_TOKEN;
+        return System.getenv("TOKEN");
     }
 
     @Override
