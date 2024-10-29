@@ -3,6 +3,7 @@ package ru.baldursgate3.tgbot.bot.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -15,18 +16,18 @@ public class GameCharacter {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
+    private String name="Тав";
 
     @ManyToOne
     @JoinColumn
     private User user;
 
-    private short strength;
-    private short dexterity;
-    private short constitution;
-    private short intellect;
-    private short wisdom;
-    private short charisma;
+    private short strength=10;
+    private short dexterity=10;
+    private short constitution=10;
+    private short intellect=10;
+    private short wisdom=10;
+    private short charisma=10;
 
 
 

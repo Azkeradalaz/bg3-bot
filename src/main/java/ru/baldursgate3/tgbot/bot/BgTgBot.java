@@ -11,12 +11,10 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 import ru.baldursgate3.tgbot.bot.entities.GameCharacter;
+import ru.baldursgate3.tgbot.bot.services.MessageService;
 import ru.baldursgate3.tgbot.bot.services.RestTemplateService;
 
 import java.util.HashMap;
@@ -30,12 +28,15 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
     private final TelegramClient telegramClient;
     private final RestTemplateService restTemplateService;
 
+    private final MessageService messageService;
+
     private final Set<Long> toRegister = new HashSet<>();
     private final Map<Long, String> activeUser = new HashMap<>();
     private final Map<Long, GameCharacter> activeGameCharacter = new HashMap<>();
 
-    public BgTgBot(RestTemplateService restTemplateService) {
+    public BgTgBot(RestTemplateService restTemplateService, MessageService messageService) {
         this.restTemplateService = restTemplateService;
+        this.messageService = messageService;
         telegramClient = new OkHttpTelegramClient(getBotToken());
     }
 
@@ -51,245 +52,75 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
 
     @Override
     public void consume(Update update) {
-        if (update.hasMessage() && update.getMessage().hasText()) {
 
-            String messageText = update.getMessage().getText();
+        EditMessageText newMessage = null;
+        SendMessage message = null;
+
+        if (update.hasMessage() && update.getMessage().hasText()) {
             Long chatId = update.getMessage().getChatId();
 
+            String messageText = update.getMessage().getText();
             User user = update.getMessage().getFrom();
-            String responseMessage = restTemplateService.getUserByTgId(user.getId());
+            String responseUserName = restTemplateService.getUserByTgId(user.getId());
 
-            SendMessage message = null;
+            if (responseUserName != null) {
+                activeUser.put(user.getId(), responseUserName);
+                message = messageService.greetingRegisteredUser(chatId, responseUserName);
 
-            if (responseMessage != null) {
-                activeUser.put(user.getId(), responseMessage);
-                message = SendMessage.builder().chatId(chatId).text("Добрый день, " + responseMessage +
-                                "! Доступные команды.")
-                        .replyMarkup(InlineKeyboardMarkup
-                                .builder()
-                                .keyboardRow(new InlineKeyboardRow(
-                                                InlineKeyboardButton
-                                                        .builder()
-                                                        .text("Создать нового персонажа")
-                                                        .callbackData("createNewGameCharacter")
-                                                        .build()
-                                        )
-                                )
-                                .keyboardRow(new InlineKeyboardRow(
-                                                InlineKeyboardButton
-                                                        .builder()
-                                                        .text("Показать сохраненных персонажей")
-                                                        .callbackData("getGameCharacterList")
-                                                        .build()
-                                        )
-                                )
-                                .build()
-                        )
-                        .build();
             } else if (!activeUser.containsKey(user.getId())) {
-                if (toRegister.contains(user.getId())) {
-                    String tmpMsg = restTemplateService.registerUser(user.getId(), messageText);
-                    toRegister.remove(user.getId());
-                    message = SendMessage.builder().chatId(chatId).text("Добрый день, " + tmpMsg +
-                            "! Доступные команды.").build();
 
-                } else if (responseMessage == null) {
-                    message = SendMessage.builder().chatId(chatId).text("Представьтесь, пожалуйста.").build();
+                if (toRegister.contains(user.getId())) {
+                    String registerUser = restTemplateService.registerUser(user.getId(), messageText);
+                    toRegister.remove(user.getId());
+                    message = messageService.greetingRegisteredUser(chatId, registerUser);
+
+                } else if (responseUserName == null) {
+                    message = messageService.greetingNonRegisteredUser(chatId);
                     toRegister.add(user.getId());
                 }
             }
 
+        } else if (update.hasCallbackQuery()) {
+            Long chatId = update.getCallbackQuery().getMessage().getChatId();
+            String callData = update.getCallbackQuery().getData();
+            long messageId = update.getCallbackQuery().getMessage().getMessageId();
+
+            if (callData.equals("createNewGameCharacter")) {
+                newMessage = messageService.newCharacter(chatId,messageId);
+                activeGameCharacter.put(update.getCallbackQuery().getFrom().getId(),new GameCharacter());
+                System.out.println(activeGameCharacter);
+            } else if (callData.equals("setCharName")) {
+                message = messageService.statChangeMessage(chatId, "Введите имя персонажа:");
+            } else if (callData.equals("setStr")) {
+                message = messageService.statChangeMessage(chatId, "Введите покатель силы:");
+            } else if (callData.equals("setDex")) {
+                message = messageService.statChangeMessage(chatId, "Введите покатель ловкости:");
+            } else if (callData.equals("setCon")) {
+                message = messageService.statChangeMessage(chatId, "Введите покатель выносливости:");
+            } else if (callData.equals("setInt")) {
+                message = messageService.statChangeMessage(chatId, "Введите покатель интеллекта:");
+            } else if (callData.equals("setWis")) {
+                message = messageService.statChangeMessage(chatId, "Введите покатель мудрости:");
+            } else if (callData.equals("setCha")) {
+                message = messageService.statChangeMessage(chatId, "Введите покатель харизмы:");
+            } else if (callData.equals("getGameCharacterList")) {//todo
+                newMessage = messageService.getCharacterList(chatId, messageId);
+            }
+        }
+        if (message != null) {
             try {
                 telegramClient.execute(message);
             } catch (TelegramApiException e) {
                 e.printStackTrace();
             }
-
-        } else if (update.hasCallbackQuery()) {
-            String callData = update.getCallbackQuery().getData();
-            long messageId = update.getCallbackQuery().getMessage().getMessageId();
-            long chatId = update.getCallbackQuery().getMessage().getChatId();
-            long userId = update.getCallbackQuery().getMessage().getChat().getId();
-            EditMessageText newMessage = null;
-            String answer = "";
-            SendMessage message = null;
-
-            if (callData.equals("createNewGameCharacter")) {
-                answer = "Выберите имя и характеристики персонажа";
-                message = SendMessage.builder()
-                        .chatId(chatId)
-                        .text(answer)
-                        .replyMarkup(InlineKeyboardMarkup
-                                .builder()
-                                .keyboardRow(new InlineKeyboardRow())
-                                .keyboardRow(
-                                        new InlineKeyboardRow(
-                                                InlineKeyboardButton
-                                                        .builder()
-                                                        .text("Имя")
-                                                        .callbackData("setCharName")
-                                                        .build(),
-                                                InlineKeyboardButton
-                                                        .builder()
-                                                        .text("Тав")
-                                                        .callbackData("setCharName")
-                                                        .build()
-                                        )
-                                )
-                                .keyboardRow(
-                                        new InlineKeyboardRow(
-                                                InlineKeyboardButton
-                                                        .builder()
-                                                        .text("СИЛ")
-                                                        .callbackData("setStr")
-                                                        .build(),
-                                                InlineKeyboardButton
-                                                        .builder()
-                                                        .text("10")
-                                                        .callbackData("setStr")
-                                                        .build()
-                                        )
-                                )
-                                .keyboardRow(
-                                        new InlineKeyboardRow(
-                                                InlineKeyboardButton
-                                                        .builder()
-                                                        .text("ЛОВ")
-                                                        .callbackData("setDex")
-                                                        .build(),
-                                                InlineKeyboardButton
-                                                        .builder()
-                                                        .text("10")
-                                                        .callbackData("setDex")
-                                                        .build()
-                                        )
-                                )
-                                .keyboardRow(
-                                        new InlineKeyboardRow(
-                                                InlineKeyboardButton
-                                                        .builder()
-                                                        .text("ВЫН")
-                                                        .callbackData("setCon")
-                                                        .build(),
-                                                InlineKeyboardButton
-                                                        .builder()
-                                                        .text("10")
-                                                        .callbackData("setCon")
-                                                        .build()
-                                        )
-                                )
-                                .keyboardRow(
-                                        new InlineKeyboardRow(
-                                                InlineKeyboardButton
-                                                        .builder()
-                                                        .text("ИНТ")
-                                                        .callbackData("setInt")
-                                                        .build(),
-                                                InlineKeyboardButton
-                                                        .builder()
-                                                        .text("10")
-                                                        .callbackData("setInt")
-                                                        .build()
-                                        )
-                                )
-                                .keyboardRow(
-                                        new InlineKeyboardRow(
-                                                InlineKeyboardButton
-                                                        .builder()
-                                                        .text("МУД")
-                                                        .callbackData("setWis")
-                                                        .build(),
-                                                InlineKeyboardButton
-                                                        .builder()
-                                                        .text("10")
-                                                        .callbackData("setWis")
-                                                        .build()
-                                        )
-                                )
-                                .keyboardRow(
-                                        new InlineKeyboardRow(
-                                                InlineKeyboardButton
-                                                        .builder()
-                                                        .text("ХАР")
-                                                        .callbackData("setCha")
-                                                        .build(),
-                                                InlineKeyboardButton
-                                                        .builder()
-                                                        .text("10")
-                                                        .callbackData("setCha")
-                                                        .build()
-                                        )
-                                )
-
-                                .build()
-                        )
-                        .build();
-
-            } else if (callData.equals("setCharName")) {
-                answer = "Введите имя персонажа:";
-                message = SendMessage.builder()
-                        .chatId(chatId)
-                        .text(answer)
-                        .build();
-
-            } else if (callData.equals("setStr")) {
-                answer = "Введите покатель силы:";
-                message = SendMessage.builder()
-                        .chatId(chatId)
-                        .text(answer)
-                        .build();
-
-            } else if (callData.equals("setDex")) {
-                answer = "Введите покатель ловкости:";
-                message = SendMessage.builder()
-                        .chatId(chatId)
-                        .text(answer)
-                        .build();
-
-            } else if (callData.equals("setCon")) {
-                answer = "Введите покатель выносливости:";
-                message = SendMessage.builder()
-                        .chatId(chatId)
-                        .text(answer)
-                        .build();
-
-            } else if (callData.equals("setInt")) {
-                answer = "Введите покатель интеллекта:";
-                message = SendMessage.builder()
-                        .chatId(chatId)
-                        .text(answer)
-                        .build();
-
-            } else if (callData.equals("setWis")) {
-                answer = "Введите покатель мудрости:";
-                message = SendMessage.builder()
-                        .chatId(chatId)
-                        .text(answer)
-                        .build();
-
-            } else if (callData.equals("setCha")) {
-                answer = "Введите покатель харизмы:";
-                message = SendMessage.builder()
-                        .chatId(chatId)
-                        .text(answer)
-                        .build();
-
-            }else if (callData.equals("getGameCharacterList")) {
-                answer = "Получаем список персонажей";
-                message = SendMessage.builder()
-                        .chatId(chatId)
-                        .text(answer)
-                        .build();
-
-            }
+        } else {
             try {
-                telegramClient.execute(message);
+                telegramClient.execute(newMessage);
             } catch (TelegramApiException e) {
                 e.printStackTrace();
             }
         }
     }
-
 
     @AfterBotRegistration
     public void afterRegistration(BotSession botSession) {
