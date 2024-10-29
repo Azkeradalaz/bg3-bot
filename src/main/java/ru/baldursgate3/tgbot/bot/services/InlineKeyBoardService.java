@@ -10,40 +10,40 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 public class InlineKeyBoardService {
     private final ButtonService buttonService;
 
-    public InlineKeyboardMarkup getGreetingInlineKeyboard(){
+    public InlineKeyboardMarkup getGreetingInlineKeyboard() {
         return InlineKeyboardMarkup
                 .builder()
                 .keyboardRow(new InlineKeyboardRow(
-                                buttonService.standardButton("Создать нового персонажа","createNewGameCharacter")))
+                        buttonService.standardButton("Создать нового персонажа", "createNewGameCharacter")))
                 .keyboardRow(new InlineKeyboardRow(
-                                buttonService.standardButton("Показать сохраненных персонажей","getGameCharacterList"))).build();
+                        buttonService.standardButton("Показать сохраненных персонажей", "getGameCharacterList"))).build();
     }
 
-    public InlineKeyboardMarkup getCharStatsKeyboard(String name, Integer str, Integer dex, Integer con, Integer intellect, Integer wis, Integer cha ){
+    public InlineKeyboardMarkup getCharStatsKeyboard(String name, Short str, Short dex, Short con, Short intellect, Short wis, Short cha) {
         return InlineKeyboardMarkup
                 .builder()
                 .keyboardRow(new InlineKeyboardRow())
                 .keyboardRow(
                         new InlineKeyboardRow(
-                                buttonService.standardButton("Имя: "+name,"setCharName")))
+                                buttonService.standardButton("Имя: " + name, "setCharName")))
                 .keyboardRow(
                         new InlineKeyboardRow(
-                                buttonService.standardButton("СИЛ: " + str.toString(),"setStr")))
+                                buttonService.standardButton("СИЛ: " + str.toString(), "setStr")))
                 .keyboardRow(
                         new InlineKeyboardRow(
-                                buttonService.standardButton("ЛОВ: "+dex.toString(),"setDex")))
+                                buttonService.standardButton("ЛОВ: " + dex.toString(), "setDex")))
                 .keyboardRow(
                         new InlineKeyboardRow(
-                                buttonService.standardButton("ВЫН: "+con.toString(),"setCon")))
+                                buttonService.standardButton("ВЫН: " + con.toString(), "setCon")))
                 .keyboardRow(
                         new InlineKeyboardRow(
-                                buttonService.standardButton("ИНТ: "+intellect.toString(),"setInt")))
+                                buttonService.standardButton("ИНТ: " + intellect.toString(), "setInt")))
                 .keyboardRow(
                         new InlineKeyboardRow(
-                                buttonService.standardButton("МУД: "+wis.toString(),"setWis")))
+                                buttonService.standardButton("МУД: " + wis.toString(), "setWis")))
                 .keyboardRow(
                         new InlineKeyboardRow(
-                                buttonService.standardButton("ХАР: "+cha.toString() ,"setCha")))
+                                buttonService.standardButton("ХАР: " + cha.toString(), "setCha")))
                 .build();
 
     }

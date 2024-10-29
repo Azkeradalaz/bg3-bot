@@ -3,8 +3,8 @@ package ru.baldursgate3.tgbot.bot.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import ru.baldursgate3.tgbot.bot.entities.GameCharacter;
 
 @RequiredArgsConstructor
 @Service
@@ -28,12 +28,18 @@ public class MessageService {
                 .build();
     }
 
-    public EditMessageText newCharacter(Long chatId, long messageId){
+    public EditMessageText characterEdit(Long chatId, long messageId, GameCharacter gameCharacter){
         return EditMessageText.builder()
                 .chatId(chatId)
                 .messageId((int) messageId)
                 .text("Выберите имя и характеристики персонажа")
-                .replyMarkup(inlineKeyBoardService.getCharStatsKeyboard("Тав", 10, 10, 10, 10, 10, 10)
+                .replyMarkup(inlineKeyBoardService.getCharStatsKeyboard(gameCharacter.getName(),
+                        gameCharacter.getStrength(),
+                        gameCharacter.getDexterity(),
+                        gameCharacter.getConstitution(),
+                        gameCharacter.getIntellect(),
+                        gameCharacter.getWisdom(),
+                        gameCharacter.getCharisma())
                 )
                 .build();
     }
