@@ -44,6 +44,9 @@ public class InlineKeyBoardService {
                 .keyboardRow(
                         new InlineKeyboardRow(
                                 buttonService.standardButton("ХАР: " + cha, "setCha")))
+                .keyboardRow(
+                        new InlineKeyboardRow(
+                                buttonService.standardButton("Сохранить", "saveCharacter")))
                 .build();
 
     }

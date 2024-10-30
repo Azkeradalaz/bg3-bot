@@ -10,8 +10,6 @@ import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateC
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 import ru.baldursgate3.tgbot.bot.services.ConsumeUpdateService;
-import ru.baldursgate3.tgbot.bot.services.MessageService;
-import ru.baldursgate3.tgbot.bot.services.RestTemplateService;
 
 
 @Component

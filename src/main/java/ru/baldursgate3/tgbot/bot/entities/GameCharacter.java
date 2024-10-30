@@ -3,7 +3,6 @@ package ru.baldursgate3.tgbot.bot.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)

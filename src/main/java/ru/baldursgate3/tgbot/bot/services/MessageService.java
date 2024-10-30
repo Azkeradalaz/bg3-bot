@@ -3,6 +3,7 @@ package ru.baldursgate3.tgbot.bot.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import ru.baldursgate3.tgbot.bot.entities.GameCharacter;
 
@@ -15,8 +16,8 @@ public class MessageService {
         return SendMessage.builder().chatId(chatId).text("Представьтесь, пожалуйста.").build();
     }
 
-    public SendMessage greetingRegisteredUser(Long chatId, String responseUserName) {
-        return SendMessage.builder().chatId(chatId).text("Добрый день, " + responseUserName +
+    public SendMessage greetingRegisteredUser(Long chatId, String responseUserMessage) {
+        return SendMessage.builder().chatId(chatId).text("Добрый день, " + responseUserMessage +
                         "! Доступные команды.")
                 .replyMarkup(inlineKeyBoardService.getGreetingInlineKeyboard()).build();
     }
@@ -27,13 +28,17 @@ public class MessageService {
                 .text(message)
                 .build();
     }
+    public DeleteMessage deleteMessage(Long chatId, Long messageId){
+        return DeleteMessage.builder().chatId(chatId).messageId(Math.toIntExact(messageId)).build();
+    }
 
     public EditMessageText characterEdit(Long chatId, long messageId, GameCharacter gameCharacter){
         return EditMessageText.builder()
                 .chatId(chatId)
                 .messageId((int) messageId)
                 .text("Выберите имя и характеристики персонажа")
-                .replyMarkup(inlineKeyBoardService.getCharStatsKeyboard(gameCharacter.getName(),
+                .replyMarkup(inlineKeyBoardService.getCharStatsKeyboard(
+                        gameCharacter.getName(),
                         gameCharacter.getStrength(),
                         gameCharacter.getDexterity(),
                         gameCharacter.getConstitution(),

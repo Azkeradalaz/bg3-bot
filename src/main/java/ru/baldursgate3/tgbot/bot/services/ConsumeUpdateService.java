@@ -3,6 +3,7 @@ package ru.baldursgate3.tgbot.bot.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
@@ -27,29 +28,37 @@ public class ConsumeUpdateService {
     private final Map<Long, String> activeUser = new HashMap<>();
     private final Map<Long, GameCharacter> activeGameCharacter = new HashMap<>();
     private final Map<Long, UserState> userStateMap = new HashMap<>();
+    private final Map<Long, Long> currentMessageCharEdit = new HashMap<>();
 
 
     public void consumeUpdate(Update update, TelegramClient telegramClient) {
         EditMessageText newMessage = null;
         SendMessage message = null;
+        DeleteMessage deleteMessage = null;
 
         if (update.hasMessage() && update.getMessage().hasText()) {
 
             Long chatId = update.getMessage().getChatId();
-
             String messageText = update.getMessage().getText();
             User user = update.getMessage().getFrom();
             long userId = user.getId();
-            String responseUserName = restTemplateService.getUserByTgId(user.getId());
+
+            ru.baldursgate3.tgbot.bot.entities.User responseUser = restTemplateService.getUserByTgId(user.getId());
 
             if (!(userStateMap.get(userId) == UserState.DEFAULT || userStateMap.get(userId) == null)) {
                 CharacterEditor.setValues(activeGameCharacter.get(userId), userStateMap.get(userId), messageText);
                 userStateMap.put(userId, UserState.DEFAULT);
+                newMessage = messageService.characterEdit(
+                        chatId,
+                        currentMessageCharEdit.get(userId),
+                        activeGameCharacter.get(userId));
+
                 System.out.println(activeGameCharacter.get(userId));
-            } else if (responseUserName != null) {
-                activeUser.put(user.getId(), responseUserName);
+
+            } else if (responseUser != null) {
+                activeUser.put(user.getId(), responseUser.getName());
                 userStateMap.put(user.getId(), UserState.DEFAULT);
-                message = messageService.greetingRegisteredUser(chatId, responseUserName);
+                message = messageService.greetingRegisteredUser(chatId, responseUser.getName());
 
 
             } else if (!activeUser.containsKey(user.getId())) {
@@ -60,7 +69,7 @@ public class ConsumeUpdateService {
                     userStateMap.put(user.getId(), UserState.DEFAULT);
                     message = messageService.greetingRegisteredUser(chatId, registerUser);
 
-                } else if (responseUserName == null) {
+                } else if (responseUser == null) {
                     message = messageService.greetingNonRegisteredUser(chatId);
                     toRegister.add(user.getId());
                 }
@@ -74,29 +83,40 @@ public class ConsumeUpdateService {
 
             if (callData.equals("createNewGameCharacter")) {
                 activeGameCharacter.put(userId, new GameCharacter());
-                newMessage = messageService.characterEdit(chatId, messageId, activeGameCharacter.get(update.getCallbackQuery().getFrom().getId()));
+                GameCharacter edit = activeGameCharacter.get(update.getCallbackQuery().getFrom().getId());
+                edit.setUser(restTemplateService.getUserByTgId(userId));
+
+                newMessage = messageService.characterEdit(chatId, messageId, edit);
+                currentMessageCharEdit.put(userId,messageId);
                 System.out.println(activeGameCharacter);
             } else if (callData.equals("setCharName")) {
                 message = messageService.statChangeMessage(chatId, "Введите имя персонажа:");
                 userStateMap.put(userId, UserState.CHANGING_CHARACTER_NAME);
             } else if (callData.equals("setStr")) {
-                message = messageService.statChangeMessage(chatId, "Введите покатель силы:");
+                message = messageService.statChangeMessage(chatId, "Введите показатель силы:");
                 userStateMap.put(userId, UserState.CHANGING_CHARACTER_STR);
             } else if (callData.equals("setDex")) {
-                message = messageService.statChangeMessage(chatId, "Введите покатель ловкости:");
+                message = messageService.statChangeMessage(chatId, "Введите показатель ловкости:");
                 userStateMap.put(userId, UserState.CHANGING_CHARACTER_DEX);
             } else if (callData.equals("setCon")) {
-                message = messageService.statChangeMessage(chatId, "Введите покатель выносливости:");
+                message = messageService.statChangeMessage(chatId, "Введите показатель выносливости:");
                 userStateMap.put(userId, UserState.CHANGING_CHARACTER_CON);
             } else if (callData.equals("setInt")) {
-                message = messageService.statChangeMessage(chatId, "Введите покатель интеллекта:");
+                message = messageService.statChangeMessage(chatId, "Введите показатель интеллекта:");
                 userStateMap.put(userId, UserState.CHANGING_CHARACTER_INT);
             } else if (callData.equals("setWis")) {
-                message = messageService.statChangeMessage(chatId, "Введите покатель мудрости:");
+                message = messageService.statChangeMessage(chatId, "Введите показатель мудрости:");
                 userStateMap.put(userId, UserState.CHANGING_CHARACTER_WIS);
             } else if (callData.equals("setCha")) {
-                message = messageService.statChangeMessage(chatId, "Введите покатель харизмы:");
+                message = messageService.statChangeMessage(chatId, "Введите показатель харизмы:");
                 userStateMap.put(userId, UserState.CHANGING_CHARACTER_CHA);
+            }else if (callData.equals("saveCharacter")) {
+                message = messageService.statChangeMessage(chatId, "Персонаж "+activeGameCharacter.get(userId).getName()+ " сохранён");
+                deleteMessage = messageService.deleteMessage(chatId,messageId);
+
+                restTemplateService.saveGameCharacter(activeGameCharacter.get(userId));
+                currentMessageCharEdit.remove(userId);
+
             } else if (callData.equals("getGameCharacterList")) {//todo
                 newMessage = messageService.getCharacterList(chatId, messageId);
             }
@@ -107,9 +127,17 @@ public class ConsumeUpdateService {
             } catch (TelegramApiException e) {
                 e.printStackTrace();
             }
-        } else if (newMessage != null) {
+        }
+        if (newMessage != null) {
             try {
                 telegramClient.execute(newMessage);
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
+        }
+        if(deleteMessage!=null){
+            try {
+                telegramClient.execute(deleteMessage);
             } catch (TelegramApiException e) {
                 e.printStackTrace();
             }

@@ -3,6 +3,7 @@ package ru.baldursgate3.tgbot.bot.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import ru.baldursgate3.tgbot.bot.entities.GameCharacter;
 import ru.baldursgate3.tgbot.bot.entities.User;
 
 import java.util.HashMap;
@@ -22,9 +23,9 @@ public class RestTemplateService {
         return restTemplate.getForObject(url, String.class, request);
     }
 
-    public String getUserByTgId(Long tgId) {
+    public User getUserByTgId(Long tgId) {
         String url = HOST + "/user/tgid/" + tgId;
-        return restTemplate.getForObject(url, String.class);
+        return restTemplate.getForObject(url, User.class);
     }
 
     public String registerUser(Long id, String name) {
@@ -33,6 +34,12 @@ public class RestTemplateService {
         user.setTgUserId(id);
         user.setName(name);
         return restTemplate.postForObject(url, user, String.class);
+    }
+
+    public String saveGameCharacter(GameCharacter gameCharacter) {
+        String url = HOST + "/character";
+        System.out.println(gameCharacter);
+        return "Персонаж " + restTemplate.postForObject(url, gameCharacter, GameCharacter.class).getName() + " сохранён";
     }
 
 }
