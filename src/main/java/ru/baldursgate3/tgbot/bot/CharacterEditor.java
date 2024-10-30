@@ -1,8 +1,10 @@
 package ru.baldursgate3.tgbot.bot;
 
+import org.springframework.stereotype.Component;
 import ru.baldursgate3.tgbot.bot.entities.GameCharacter;
 
-public final class CharacterEditor {
+@Component
+public class CharacterEditor {
     public static GameCharacter setValues(GameCharacter gameCharacter, UserState state, String message) {
           switch (state) {
             case CHANGING_CHARACTER_NAME:

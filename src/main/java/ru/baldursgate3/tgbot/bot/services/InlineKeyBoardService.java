@@ -28,22 +28,22 @@ public class InlineKeyBoardService {
                                 buttonService.standardButton("Имя: " + name, "setCharName")))
                 .keyboardRow(
                         new InlineKeyboardRow(
-                                buttonService.standardButton("СИЛ: " + str.toString(), "setStr")))
+                                buttonService.standardButton("СИЛ: " + str, "setStr")))
                 .keyboardRow(
                         new InlineKeyboardRow(
-                                buttonService.standardButton("ЛОВ: " + dex.toString(), "setDex")))
+                                buttonService.standardButton("ЛОВ: " + dex, "setDex")))
                 .keyboardRow(
                         new InlineKeyboardRow(
-                                buttonService.standardButton("ВЫН: " + con.toString(), "setCon")))
+                                buttonService.standardButton("ВЫН: " + con, "setCon")))
                 .keyboardRow(
                         new InlineKeyboardRow(
-                                buttonService.standardButton("ИНТ: " + intellect.toString(), "setInt")))
+                                buttonService.standardButton("ИНТ: " + intellect, "setInt")))
                 .keyboardRow(
                         new InlineKeyboardRow(
-                                buttonService.standardButton("МУД: " + wis.toString(), "setWis")))
+                                buttonService.standardButton("МУД: " + wis, "setWis")))
                 .keyboardRow(
                         new InlineKeyboardRow(
-                                buttonService.standardButton("ХАР: " + cha.toString(), "setCha")))
+                                buttonService.standardButton("ХАР: " + cha, "setCha")))
                 .build();
 
     }
