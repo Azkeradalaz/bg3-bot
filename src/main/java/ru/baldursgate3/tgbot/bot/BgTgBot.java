@@ -19,7 +19,7 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
     private final TelegramClient telegramClient;
     private final ConsumeUpdateService consumeUpdateService;
 
-    public BgTgBot(RestTemplateService restTemplateService, MessageService messageService, ConsumeUpdateService consumeUpdateService) {
+    public BgTgBot(ConsumeUpdateService consumeUpdateService) {
         this.consumeUpdateService = consumeUpdateService;
         telegramClient = new OkHttpTelegramClient(getBotToken());
     }
