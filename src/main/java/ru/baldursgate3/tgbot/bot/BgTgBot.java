@@ -37,9 +37,4 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
         consumeUpdateService.consumeUpdate(update, telegramClient);
 
     }
-
-    @AfterBotRegistration
-    public void afterRegistration(BotSession botSession) {
-        System.out.println("Registered bot running state is: " + botSession.isRunning());
-    }
 }
