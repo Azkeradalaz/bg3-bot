@@ -5,8 +5,9 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
-@RequiredArgsConstructor
+
 @Service
+@RequiredArgsConstructor
 public class InlineKeyBoardService {
     private final ButtonService buttonService;
 

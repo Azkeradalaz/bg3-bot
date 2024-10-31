@@ -2,6 +2,7 @@ package ru.baldursgate3.tgbot.bot;
 
 import org.springframework.stereotype.Component;
 import ru.baldursgate3.tgbot.bot.entities.GameCharacter;
+import ru.baldursgate3.tgbot.bot.enums.UserState;
 
 @Component
 public class CharacterEditor {

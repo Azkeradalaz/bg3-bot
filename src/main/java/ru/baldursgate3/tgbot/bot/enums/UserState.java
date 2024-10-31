@@ -1,4 +1,4 @@
-package ru.baldursgate3.tgbot.bot;
+package ru.baldursgate3.tgbot.bot.enums;
 
 public enum UserState {
     CHANGING_CHARACTER_NAME,

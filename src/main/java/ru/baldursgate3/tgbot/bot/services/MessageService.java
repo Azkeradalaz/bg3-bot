@@ -7,8 +7,8 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import ru.baldursgate3.tgbot.bot.entities.GameCharacter;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class MessageService {
     private final InlineKeyBoardService inlineKeyBoardService;
 

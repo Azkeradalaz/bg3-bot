@@ -1,20 +1,22 @@
 package ru.baldursgate3.tgbot.bot.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import ru.baldursgate3.tgbot.bot.entities.GameCharacter;
 import ru.baldursgate3.tgbot.bot.entities.User;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class RestTemplateService {
     private final RestTemplate restTemplate;
-
-    private static final String HOST = System.getenv("HOST");
+    @Value("${host}")
+    private String HOST;
 
     public String getUser(Long tgId) {
         String url = HOST + "/user";
@@ -38,8 +40,14 @@ public class RestTemplateService {
 
     public String saveGameCharacter(GameCharacter gameCharacter) {
         String url = HOST + "/character";
-        System.out.println(gameCharacter);
         return "Персонаж " + restTemplate.postForObject(url, gameCharacter, GameCharacter.class).getName() + " сохранён";
+    }
+
+    public List<GameCharacter> getListOfGameCharacters(Long userId){
+        String url = HOST + "/character/"+userId;
+        List<GameCharacter> gameCharacterList = restTemplate.getForObject(url, List.class);
+        System.out.println(gameCharacterList);
+        return gameCharacterList;
     }
 
 }

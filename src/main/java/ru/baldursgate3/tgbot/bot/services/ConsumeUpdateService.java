@@ -10,7 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 import ru.baldursgate3.tgbot.bot.CharacterEditor;
-import ru.baldursgate3.tgbot.bot.UserState;
+import ru.baldursgate3.tgbot.bot.enums.UserState;
 import ru.baldursgate3.tgbot.bot.entities.GameCharacter;
 
 import java.util.HashMap;
@@ -18,8 +18,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-@RequiredArgsConstructor
+
+
+
 @Service
+@RequiredArgsConstructor
 public class ConsumeUpdateService {
 
     private final RestTemplateService restTemplateService;
@@ -87,7 +90,7 @@ public class ConsumeUpdateService {
                 edit.setUser(restTemplateService.getUserByTgId(userId));
 
                 newMessage = messageService.characterEdit(chatId, messageId, edit);
-                currentMessageCharEdit.put(userId,messageId);
+                currentMessageCharEdit.put(userId, messageId);
                 System.out.println(activeGameCharacter);
             } else if (callData.equals("setCharName")) {
                 message = messageService.statChangeMessage(chatId, "Введите имя персонажа:");
@@ -110,14 +113,15 @@ public class ConsumeUpdateService {
             } else if (callData.equals("setCha")) {
                 message = messageService.statChangeMessage(chatId, "Введите показатель харизмы:");
                 userStateMap.put(userId, UserState.CHANGING_CHARACTER_CHA);
-            }else if (callData.equals("saveCharacter")) {
-                message = messageService.statChangeMessage(chatId, "Персонаж "+activeGameCharacter.get(userId).getName()+ " сохранён");
-                deleteMessage = messageService.deleteMessage(chatId,messageId);
+            } else if (callData.equals("saveCharacter")) {
+                message = messageService.statChangeMessage(chatId, "Персонаж " + activeGameCharacter.get(userId).getName() + " сохранён");
+                deleteMessage = messageService.deleteMessage(chatId, messageId);
 
                 restTemplateService.saveGameCharacter(activeGameCharacter.get(userId));
                 currentMessageCharEdit.remove(userId);
 
             } else if (callData.equals("getGameCharacterList")) {//todo
+                restTemplateService.getListOfGameCharacters(userId);
                 newMessage = messageService.getCharacterList(chatId, messageId);
             }
         }
@@ -135,7 +139,7 @@ public class ConsumeUpdateService {
                 e.printStackTrace();
             }
         }
-        if(deleteMessage!=null){
+        if (deleteMessage != null) {
             try {
                 telegramClient.execute(deleteMessage);
             } catch (TelegramApiException e) {
