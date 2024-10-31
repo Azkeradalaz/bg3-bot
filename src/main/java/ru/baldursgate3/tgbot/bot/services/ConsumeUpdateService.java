@@ -72,7 +72,7 @@ public class ConsumeUpdateService {
                     userStateMap.put(user.getId(), UserState.DEFAULT);
                     message = messageService.greetingRegisteredUser(chatId, registerUser);
 
-                } else if (responseUser == null) {
+                } else {
                     message = messageService.greetingNonRegisteredUser(chatId);
                     toRegister.add(user.getId());
                 }
