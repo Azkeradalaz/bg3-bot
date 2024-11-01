@@ -7,11 +7,10 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.meta.generics.TelegramClient;
 import ru.baldursgate3.tgbot.bot.CharacterEditor;
 import ru.baldursgate3.tgbot.bot.enums.UserState;
 import ru.baldursgate3.tgbot.bot.entities.GameCharacter;
+import ru.baldursgate3.tgbot.bot.model.MessageDto;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,9 +33,9 @@ public class ConsumeUpdateService {
     private final Map<Long, Long> currentMessageCharEdit = new HashMap<>();
 
 
-    public void consumeUpdate(Update update, TelegramClient telegramClient) {
-        EditMessageText newMessage = null;
+    public MessageDto consumeUpdate(Update update) {
         SendMessage message = null;
+        EditMessageText editMessage = null;
         DeleteMessage deleteMessage = null;
 
         if (update.hasMessage() && update.getMessage().hasText()) {
@@ -51,7 +50,7 @@ public class ConsumeUpdateService {
             if (!(userStateMap.get(userId) == UserState.DEFAULT || userStateMap.get(userId) == null)) {
                 CharacterEditor.setValues(activeGameCharacter.get(userId), userStateMap.get(userId), messageText);
                 userStateMap.put(userId, UserState.DEFAULT);
-                newMessage = messageService.characterEdit(
+                editMessage = messageService.characterEdit(
                         chatId,
                         currentMessageCharEdit.get(userId),
                         activeGameCharacter.get(userId));
@@ -89,7 +88,7 @@ public class ConsumeUpdateService {
                 GameCharacter edit = activeGameCharacter.get(update.getCallbackQuery().getFrom().getId());
                 edit.setUser(restTemplateService.getUserByTgId(userId));
 
-                newMessage = messageService.characterEdit(chatId, messageId, edit);
+                editMessage = messageService.characterEdit(chatId, messageId, edit);
                 currentMessageCharEdit.put(userId, messageId);
                 System.out.println(activeGameCharacter);
             } else if (callData.equals("setCharName")) {
@@ -122,31 +121,11 @@ public class ConsumeUpdateService {
 
             } else if (callData.equals("getGameCharacterList")) {//todo
                 restTemplateService.getListOfGameCharacters(userId);
-                newMessage = messageService.getCharacterList(chatId, messageId);
-            }
-        }
-        if (message != null) {
-            try {
-                telegramClient.execute(message);
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
-        }
-        if (newMessage != null) {
-            try {
-                telegramClient.execute(newMessage);
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
-        }
-        if (deleteMessage != null) {
-            try {
-                telegramClient.execute(deleteMessage);
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
+                editMessage = messageService.getCharacterList(chatId, messageId);
             }
         }
 
+        return new MessageDto(message,editMessage,deleteMessage);
 
     }
 
