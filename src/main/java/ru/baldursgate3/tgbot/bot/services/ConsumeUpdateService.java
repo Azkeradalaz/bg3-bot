@@ -58,8 +58,6 @@ public class ConsumeUpdateService {
                         currentMessageCharEdit.get(userId),
                         activeGameCharacter.get(userId));
 
-                System.out.println(activeGameCharacter.get(userId));
-
             } else {
                 String userName = userService.getUserName(userId);
                 userStateMap.put(userId, UserState.DEFAULT);
