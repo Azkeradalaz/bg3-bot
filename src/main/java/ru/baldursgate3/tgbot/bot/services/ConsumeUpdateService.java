@@ -13,11 +13,7 @@ import ru.baldursgate3.tgbot.bot.entities.GameCharacter;
 import ru.baldursgate3.tgbot.bot.model.MessageDto;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-
-
 
 
 @Service
@@ -26,8 +22,7 @@ public class ConsumeUpdateService {
 
     private final RestTemplateService restTemplateService;
     private final MessageService messageService;
-    private final Set<Long> toRegister = new HashSet<>();
-    private final Map<Long, String> activeUser = new HashMap<>();
+    private final UserService userService;
     private final Map<Long, GameCharacter> activeGameCharacter = new HashMap<>();
     private final Map<Long, UserState> userStateMap = new HashMap<>();
     private final Map<Long, Long> currentMessageCharEdit = new HashMap<>();
@@ -42,12 +37,20 @@ public class ConsumeUpdateService {
 
             Long chatId = update.getMessage().getChatId();
             String messageText = update.getMessage().getText();
-            User user = update.getMessage().getFrom();
-            long userId = user.getId();
+            long userId = update.getMessage().getFrom().getId();
 
-            ru.baldursgate3.tgbot.bot.entities.User responseUser = restTemplateService.getUserByTgId(user.getId());
+            if (userStateMap.get(userId)==UserState.REGISTERING){
+                String registeredUser = userService.registerUser(userId,messageText);
+                message = messageService.greetingRegisteredUser(chatId, registeredUser);
+                userStateMap.put(userId,UserState.DEFAULT);
+            }
 
-            if (!(userStateMap.get(userId) == UserState.DEFAULT || userStateMap.get(userId) == null)) {
+            else if(userService.isNotRegistered(userId)){
+                message = messageService.greetingNonRegisteredUser(chatId);
+                userStateMap.put(userId,UserState.REGISTERING);
+            }
+
+            else if (!(userStateMap.get(userId) == UserState.DEFAULT || userStateMap.get(userId) == null)) {
                 CharacterEditor.setValues(activeGameCharacter.get(userId), userStateMap.get(userId), messageText);
                 userStateMap.put(userId, UserState.DEFAULT);
                 editMessage = messageService.characterEdit(
@@ -57,25 +60,13 @@ public class ConsumeUpdateService {
 
                 System.out.println(activeGameCharacter.get(userId));
 
-            } else if (responseUser != null) {
-                activeUser.put(user.getId(), responseUser.getName());
-                userStateMap.put(user.getId(), UserState.DEFAULT);
-                message = messageService.greetingRegisteredUser(chatId, responseUser.getName());
-
-
-            } else if (!activeUser.containsKey(user.getId())) {
-
-                if (toRegister.contains(user.getId())) {
-                    String registerUser = restTemplateService.registerUser(user.getId(), messageText);
-                    toRegister.remove(user.getId());
-                    userStateMap.put(user.getId(), UserState.DEFAULT);
-                    message = messageService.greetingRegisteredUser(chatId, registerUser);
-
-                } else {
-                    message = messageService.greetingNonRegisteredUser(chatId);
-                    toRegister.add(user.getId());
-                }
+            } else {
+                String userName = userService.getUserName(userId);
+                userStateMap.put(userId, UserState.DEFAULT);
+                message = messageService.greetingRegisteredUser(chatId, userName);
             }
+
+
 
         } else if (update.hasCallbackQuery()) {
             Long chatId = update.getCallbackQuery().getMessage().getChatId();

@@ -50,21 +50,21 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
             try {
                 telegramClient.execute(sendMessage);
             } catch (TelegramApiException e) {
-                e.printStackTrace();
+                e.printStackTrace();//todo
             }
         }
         if (editMessageText != null) {
             try {
                 telegramClient.execute(editMessageText);
             } catch (TelegramApiException e) {
-                e.printStackTrace();
+                e.printStackTrace();//todo
             }
         }
         if (deleteMessage != null) {
             try {
                 telegramClient.execute(deleteMessage);
             } catch (TelegramApiException e) {
-                e.printStackTrace();
+                e.printStackTrace();//todo
             }
         }
 
