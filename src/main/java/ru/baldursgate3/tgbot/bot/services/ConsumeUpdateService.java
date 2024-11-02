@@ -6,10 +6,9 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.User;
 import ru.baldursgate3.tgbot.bot.CharacterEditor;
-import ru.baldursgate3.tgbot.bot.enums.UserState;
 import ru.baldursgate3.tgbot.bot.entities.GameCharacter;
+import ru.baldursgate3.tgbot.bot.enums.UserState;
 import ru.baldursgate3.tgbot.bot.model.MessageDto;
 
 import java.util.HashMap;
@@ -34,36 +33,26 @@ public class ConsumeUpdateService {
         DeleteMessage deleteMessage = null;
 
         if (update.hasMessage() && update.getMessage().hasText()) {
-
             Long chatId = update.getMessage().getChatId();
             String messageText = update.getMessage().getText();
             long userId = update.getMessage().getFrom().getId();
 
-            if (userStateMap.get(userId)==UserState.REGISTERING){
-                String registeredUser = userService.registerUser(userId,messageText);
-                message = messageService.greetingRegisteredUser(chatId, registeredUser);
-                userStateMap.put(userId,UserState.DEFAULT);
-            }
-
-            else if(userService.isNotRegistered(userId)){
-                message = messageService.greetingNonRegisteredUser(chatId);
-                userStateMap.put(userId,UserState.REGISTERING);
-            }
-
-            else if (!(userStateMap.get(userId) == UserState.DEFAULT || userStateMap.get(userId) == null)) {
-                CharacterEditor.setValues(activeGameCharacter.get(userId), userStateMap.get(userId), messageText);
-                userStateMap.put(userId, UserState.DEFAULT);
-                editMessage = messageService.characterEdit(
-                        chatId,
-                        currentMessageCharEdit.get(userId),
-                        activeGameCharacter.get(userId));
-
+            if (userService.isRegistered(userId)) {
+                if (!(userStateMap.get(userId) == UserState.DEFAULT || userStateMap.get(userId) == null)) {
+                    CharacterEditor.setValues(activeGameCharacter.get(userId), userStateMap.get(userId), messageText);
+                    userStateMap.put(userId, UserState.DEFAULT);
+                    editMessage = messageService.characterEdit(
+                            chatId,
+                            currentMessageCharEdit.get(userId),
+                            activeGameCharacter.get(userId));
+                } else {
+                    String userName = userService.getUserName(userId);
+                    userStateMap.put(userId, UserState.DEFAULT);
+                    message = messageService.greetingRegisteredUser(chatId, userName);
+                }
             } else {
-                String userName = userService.getUserName(userId);
-                userStateMap.put(userId, UserState.DEFAULT);
-                message = messageService.greetingRegisteredUser(chatId, userName);
+                message = userService.processNonRegisteredUser(chatId,userId,messageText);
             }
-
 
 
         } else if (update.hasCallbackQuery()) {
@@ -114,7 +103,7 @@ public class ConsumeUpdateService {
             }
         }
 
-        return new MessageDto(message,editMessage,deleteMessage);
+        return new MessageDto(message, editMessage, deleteMessage);
 
     }
 

@@ -1,7 +1,6 @@
 package ru.baldursgate3.tgbot.bot.enums;
 
 public enum UserState {
-    REGISTERING,
     CHANGING_CHARACTER_NAME,
     CHANGING_CHARACTER_STR,
     CHANGING_CHARACTER_DEX,
