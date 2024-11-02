@@ -6,6 +6,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import ru.baldursgate3.tgbot.bot.entities.GameCharacter;
+import ru.baldursgate3.tgbot.bot.model.GameCharacterDto;
 
 @Service
 @RequiredArgsConstructor
@@ -32,19 +33,19 @@ public class MessageService {
         return DeleteMessage.builder().chatId(chatId).messageId(Math.toIntExact(messageId)).build();
     }
 
-    public EditMessageText characterEdit(Long chatId, long messageId, GameCharacter gameCharacter){
+    public EditMessageText characterEdit(Long chatId, long messageId, GameCharacterDto gameCharacter){
         return EditMessageText.builder()
                 .chatId(chatId)
                 .messageId((int) messageId)
                 .text("Выберите имя и характеристики персонажа")
                 .replyMarkup(inlineKeyBoardService.getCharStatsKeyboard(
-                        gameCharacter.getName(),
-                        gameCharacter.getStrength(),
-                        gameCharacter.getDexterity(),
-                        gameCharacter.getConstitution(),
-                        gameCharacter.getIntellect(),
-                        gameCharacter.getWisdom(),
-                        gameCharacter.getCharisma())
+                        gameCharacter.name(),
+                        gameCharacter.strength(),
+                        gameCharacter.dexterity(),
+                        gameCharacter.constitution(),
+                        gameCharacter.intellect(),
+                        gameCharacter.wisdom(),
+                        gameCharacter.charisma())
                 )
                 .build();
     }

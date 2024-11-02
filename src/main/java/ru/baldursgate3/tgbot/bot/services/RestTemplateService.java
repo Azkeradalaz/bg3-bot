@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import ru.baldursgate3.tgbot.bot.entities.GameCharacter;
 import ru.baldursgate3.tgbot.bot.entities.User;
+import ru.baldursgate3.tgbot.bot.model.GameCharacterDto;
+import ru.baldursgate3.tgbot.bot.model.UserDto;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,27 +27,25 @@ public class RestTemplateService {
         return restTemplate.getForObject(url, String.class, request);
     }
 
-    public User getUserByTgId(Long tgId) {
+    public UserDto getUserByTgId(Long tgId) {
         String url = HOST + "/user/tgid/" + tgId;
-        return restTemplate.getForObject(url, User.class);
+        return restTemplate.getForObject(url, UserDto.class);
     }
 
     public String registerUser(Long id, String name) {
         String url = HOST + "/user";
-        User user = new User();
-        user.setTgUserId(id);
-        user.setName(name);
+        UserDto user = new UserDto(name,id);
         return restTemplate.postForObject(url, user, String.class);
     }
 
-    public String saveGameCharacter(GameCharacter gameCharacter) {
+    public String saveGameCharacter(GameCharacterDto gameCharacter) {
         String url = HOST + "/character";
-        return "Персонаж " + restTemplate.postForObject(url, gameCharacter, GameCharacter.class).getName() + " сохранён";
+        return "Персонаж " + restTemplate.postForObject(url, gameCharacter, String.class) + " сохранён";
     }
 
-    public List<GameCharacter> getListOfGameCharacters(Long userId){
+    public List<GameCharacterDto> getListOfGameCharacters(Long userId){//todo
         String url = HOST + "/character/"+userId;
-        List<GameCharacter> gameCharacterList = restTemplate.getForObject(url, List.class);
+        List<GameCharacterDto> gameCharacterList = restTemplate.getForObject(url, List.class);
         System.out.println(gameCharacterList);
         return gameCharacterList;
     }

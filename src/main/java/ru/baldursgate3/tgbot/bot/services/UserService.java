@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import ru.baldursgate3.tgbot.bot.model.UserDto;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -33,7 +34,7 @@ public class UserService {
     }
 
     public String getUserName(Long userId) {
-        return restTemplateService.getUserByTgId(userId).getName();
+        return restTemplateService.getUserByTgId(userId).name();
     }
 
     public SendMessage processNonRegisteredUser(Long chatId,Long userId,String messageText) {
@@ -44,6 +45,10 @@ public class UserService {
             setToRegister(userId);
             return messageService.greetingNonRegisteredUser(chatId);
         }
+
+    }
+    public UserDto getUserDto(Long userId){
+        return restTemplateService.getUserByTgId(userId);
 
     }
 }

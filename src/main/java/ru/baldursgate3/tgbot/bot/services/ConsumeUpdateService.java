@@ -9,6 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.baldursgate3.tgbot.bot.CharacterEditor;
 import ru.baldursgate3.tgbot.bot.entities.GameCharacter;
 import ru.baldursgate3.tgbot.bot.enums.UserState;
+import ru.baldursgate3.tgbot.bot.model.GameCharacterDto;
 import ru.baldursgate3.tgbot.bot.model.MessageDto;
 
 import java.util.HashMap;
@@ -22,7 +23,7 @@ public class ConsumeUpdateService {
     private final RestTemplateService restTemplateService;
     private final MessageService messageService;
     private final UserService userService;
-    private final Map<Long, GameCharacter> activeGameCharacter = new HashMap<>();
+    private final Map<Long, GameCharacterDto> activeGameCharacter = new HashMap<>();
     private final Map<Long, UserState> userStateMap = new HashMap<>();
     private final Map<Long, Long> currentMessageCharEdit = new HashMap<>();
 
@@ -39,7 +40,7 @@ public class ConsumeUpdateService {
 
             if (userService.isRegistered(userId)) {
                 if (!(userStateMap.get(userId) == UserState.DEFAULT || userStateMap.get(userId) == null)) {
-                    CharacterEditor.setValues(activeGameCharacter.get(userId), userStateMap.get(userId), messageText);
+                    activeGameCharacter.put(userId, CharacterEditor.setValues(activeGameCharacter.get(userId), userStateMap.get(userId), messageText));
                     userStateMap.put(userId, UserState.DEFAULT);
                     editMessage = messageService.characterEdit(
                             chatId,
@@ -62,9 +63,10 @@ public class ConsumeUpdateService {
             long userId = update.getCallbackQuery().getFrom().getId();
 
             if (callData.equals("createNewGameCharacter")) {
-                activeGameCharacter.put(userId, new GameCharacter());
-                GameCharacter edit = activeGameCharacter.get(update.getCallbackQuery().getFrom().getId());
-                edit.setUser(restTemplateService.getUserByTgId(userId));
+                activeGameCharacter.put(userId, new GameCharacterDto("Тав",
+                        userService.getUserDto(userId),(short)10,(short)10,(short)10,(short)10,(short)10,(short)10));
+                GameCharacterDto edit = activeGameCharacter.get(update.getCallbackQuery().getFrom().getId());
+//                edit.setUser(restTemplateService.getUserByTgId(userId));
 
                 editMessage = messageService.characterEdit(chatId, messageId, edit);
                 currentMessageCharEdit.put(userId, messageId);
@@ -91,7 +93,7 @@ public class ConsumeUpdateService {
                 message = messageService.statChangeMessage(chatId, "Введите показатель харизмы:");
                 userStateMap.put(userId, UserState.CHANGING_CHARACTER_CHA);
             } else if (callData.equals("saveCharacter")) {
-                message = messageService.statChangeMessage(chatId, "Персонаж " + activeGameCharacter.get(userId).getName() + " сохранён");
+                message = messageService.statChangeMessage(chatId, "Персонаж " + activeGameCharacter.get(userId).name() + " сохранён");
                 deleteMessage = messageService.deleteMessage(chatId, messageId);
 
                 restTemplateService.saveGameCharacter(activeGameCharacter.get(userId));

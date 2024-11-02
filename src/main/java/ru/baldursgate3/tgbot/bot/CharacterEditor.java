@@ -3,39 +3,50 @@ package ru.baldursgate3.tgbot.bot;
 import org.springframework.stereotype.Component;
 import ru.baldursgate3.tgbot.bot.entities.GameCharacter;
 import ru.baldursgate3.tgbot.bot.enums.UserState;
+import ru.baldursgate3.tgbot.bot.model.GameCharacterDto;
+import ru.baldursgate3.tgbot.bot.model.UserDto;
 
 @Component
 public class CharacterEditor {
-    public static GameCharacter setValues(GameCharacter gameCharacter, UserState state, String message) {
+    public static GameCharacterDto setValues(GameCharacterDto gameCharacter, UserState state, String message) {
+        String name = gameCharacter.name();
+        UserDto userDto=gameCharacter.userDto();
+        short strength=gameCharacter.strength();
+        short dexterity=gameCharacter.dexterity();
+        short constitution= gameCharacter.constitution();
+        short intellect= gameCharacter.intellect();
+        short wisdom= gameCharacter.wisdom();
+        short charisma= gameCharacter.charisma();
+
           switch (state) {
             case CHANGING_CHARACTER_NAME:
                 if(message.length()>30){
-                    gameCharacter.setName(message.substring(0,30));
+                    name = message.substring(0,30);
                 } else {
-                    gameCharacter.setName(message);
+                    name = message;
                 }
                 break;
             case CHANGING_CHARACTER_STR:
-                gameCharacter.setStrength(Short.parseShort(message));
+                strength = Short.parseShort(message);
                 break;
             case CHANGING_CHARACTER_DEX:
-                gameCharacter.setDexterity(Short.parseShort(message));
+                dexterity =Short.parseShort(message);
                 break;
             case CHANGING_CHARACTER_CON:
-                gameCharacter.setConstitution(Short.parseShort(message));
+                constitution=Short.parseShort(message);
                 break;
             case CHANGING_CHARACTER_INT:
-                gameCharacter.setIntellect(Short.parseShort(message));
+                intellect = Short.parseShort(message);
                 break;
             case CHANGING_CHARACTER_WIS:
-                gameCharacter.setWisdom(Short.parseShort(message));
+                wisdom = Short.parseShort(message);
                 break;
             case CHANGING_CHARACTER_CHA:
-                gameCharacter.setCharisma(Short.parseShort(message));
+                charisma = Short.parseShort(message);
                 break;
             default:
                 break;
         }
-        return gameCharacter;
+        return new GameCharacterDto(name, userDto, strength,dexterity,constitution,intellect,wisdom,charisma);
     }
 }
