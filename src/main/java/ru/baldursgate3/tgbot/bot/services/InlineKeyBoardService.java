@@ -1,5 +1,7 @@
 package ru.baldursgate3.tgbot.bot.services;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -25,10 +27,16 @@ public class InlineKeyBoardService {
                         buttonService.standardButton("Показать сохраненных персонажей", "getGameCharacterList"))).build();
     }
     public InlineKeyboardMarkup getListOfSavedGameCharacter(Long userId){
-        List<GameCharacterDto> list = restTemplateService.getListOfGameCharacters(userId);
+        ObjectMapper mapper = new ObjectMapper();
+        List<GameCharacterDto> list = mapper.convertValue(
+                restTemplateService.getListOfGameCharacters(userId),
+                new TypeReference<List<GameCharacterDto>>(){ });
         List<InlineKeyboardRow> listOfRows = new ArrayList<>();
         for (GameCharacterDto gameChar: list) {
-            listOfRows.add(new InlineKeyboardRow(buttonService.standardButton(gameChar.name(),"edit"+gameChar.name()))); //todo тут ошибка каста class java.util.LinkedHashMap cannot be cast to class ru.baldursgate3.tgbot.bot.model.GameCharacterDto (java.util.LinkedHashMap is in module java.base of loader 'bootstrap'; ru.baldursgate3.tgbot.bot.model.GameCharacterDto is in unnamed module of loader 'app')
+            listOfRows.add(new InlineKeyboardRow(
+                    buttonService.standardButton(
+                            gameChar.name(),
+                            "edit"+gameChar.name())));
         }
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup(listOfRows);
         return inlineKeyboardMarkup;
