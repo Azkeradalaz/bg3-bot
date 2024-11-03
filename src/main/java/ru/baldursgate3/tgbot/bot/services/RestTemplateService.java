@@ -46,7 +46,6 @@ public class RestTemplateService {
     public List<GameCharacterDto> getListOfGameCharacters(Long userTgId){//todo
         String url = HOST + "/character/tgid/"+userTgId;
         List<GameCharacterDto> gameCharacterList = restTemplate.getForObject(url, List.class);
-        System.out.println(gameCharacterList);
         return gameCharacterList;
     }
 
