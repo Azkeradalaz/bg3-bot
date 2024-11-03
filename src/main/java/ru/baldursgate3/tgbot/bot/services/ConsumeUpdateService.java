@@ -7,7 +7,6 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.baldursgate3.tgbot.bot.CharacterEditor;
-import ru.baldursgate3.tgbot.bot.entities.GameCharacter;
 import ru.baldursgate3.tgbot.bot.enums.UserState;
 import ru.baldursgate3.tgbot.bot.model.GameCharacterDto;
 import ru.baldursgate3.tgbot.bot.model.MessageDto;
@@ -52,7 +51,7 @@ public class ConsumeUpdateService {
                     message = messageService.greetingRegisteredUser(chatId, userName);
                 }
             } else {
-                message = userService.processNonRegisteredUser(chatId,userId,messageText);
+                message = userService.processNonRegisteredUser(chatId, userId, messageText);
             }
 
 
@@ -63,13 +62,12 @@ public class ConsumeUpdateService {
             long userId = update.getCallbackQuery().getFrom().getId();
 
             if (callData.equals("createNewGameCharacter")) {
-                activeGameCharacter.put(userId, new GameCharacterDto(null,"Тав",
-                        userService.getUserDto(userId),(short)10,(short)10,(short)10,(short)10,(short)10,(short)10));
+                activeGameCharacter.put(userId, new GameCharacterDto(null, "Тав",
+                        userService.getUserDto(userId), (short) 10, (short) 10, (short) 10, (short) 10, (short) 10, (short) 10));
                 GameCharacterDto edit = activeGameCharacter.get(update.getCallbackQuery().getFrom().getId());
 
                 editMessage = messageService.characterEdit(chatId, messageId, edit);
                 currentMessageCharEdit.put(userId, messageId);
-                System.out.println(activeGameCharacter);
             } else if (callData.equals("setCharName")) {
                 message = messageService.statChangeMessage(chatId, "Введите имя персонажа:");
                 userStateMap.put(userId, UserState.CHANGING_CHARACTER_NAME);
@@ -100,11 +98,19 @@ public class ConsumeUpdateService {
 
             } else if (callData.equals("getGameCharacterList")) {
                 editMessage = messageService.getCharacterList(chatId, messageId, userId);
-            } else if(callData.matches("delete[\\d]+")){
+            } else if (callData.matches("delete[\\d]+")) {
+                restTemplateService.deleteCharacter(Long.parseLong(callData.replace("delete","")));
+                editMessage = messageService.getCharacterList(chatId, messageId, userId);
 
-                System.out.println(callData);
-            }else if(callData.matches("edit[\\d]+")){
-                System.out.println(callData);
+            } else if (callData.matches("edit[\\d]+")) {
+
+
+                GameCharacterDto edit = activeGameCharacter.get(update.getCallbackQuery().getFrom().getId());
+                editMessage = messageService.characterEdit(chatId, messageId, edit);
+                currentMessageCharEdit.put(userId, messageId);
+            } else if (callData.equals("backToMainMenu")) {
+                String userName = userService.getUserName(userId);
+                editMessage = messageService.backToMainMenuMessage(chatId,userName,messageId);
             }
         }
 

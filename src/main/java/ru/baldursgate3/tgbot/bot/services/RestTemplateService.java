@@ -49,4 +49,9 @@ public class RestTemplateService {
         return gameCharacterList;
     }
 
+    public void deleteCharacter(Long charId){
+        String url = HOST + "/character/"+charId;
+        restTemplate.delete(url);
+    }
+
 }

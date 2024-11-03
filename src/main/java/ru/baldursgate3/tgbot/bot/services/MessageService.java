@@ -21,6 +21,15 @@ public class MessageService {
                         "! Доступные команды.")
                 .replyMarkup(inlineKeyBoardService.getGreetingInlineKeyboard()).build();
     }
+    public EditMessageText backToMainMenuMessage(Long chatId, String responseUserMessage, Long messageId) {
+        return EditMessageText.builder()
+                .chatId(chatId)
+                .messageId(messageId.intValue())
+                .text("Добрый день, " + responseUserMessage + "! Доступные команды.")
+                .replyMarkup(inlineKeyBoardService.getGreetingInlineKeyboard())
+                .build();
+
+    }
 
     public SendMessage statChangeMessage(Long chatId, String message) {
         return SendMessage.builder()

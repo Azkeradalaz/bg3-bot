@@ -50,31 +50,15 @@ public class InlineKeyBoardService {
     public InlineKeyboardMarkup getCharStatsKeyboard(String name, Short str, Short dex, Short con, Short intellect, Short wis, Short cha) {
         return InlineKeyboardMarkup
                 .builder()
-                .keyboardRow(new InlineKeyboardRow())
-                .keyboardRow(
-                        new InlineKeyboardRow(
-                                buttonService.standardButton("Имя: " + name, "setCharName")))
-                .keyboardRow(
-                        new InlineKeyboardRow(
-                                buttonService.standardButton("СИЛ: " + str, "setStr")))
-                .keyboardRow(
-                        new InlineKeyboardRow(
-                                buttonService.standardButton("ЛОВ: " + dex, "setDex")))
-                .keyboardRow(
-                        new InlineKeyboardRow(
-                                buttonService.standardButton("ВЫН: " + con, "setCon")))
-                .keyboardRow(
-                        new InlineKeyboardRow(
-                                buttonService.standardButton("ИНТ: " + intellect, "setInt")))
-                .keyboardRow(
-                        new InlineKeyboardRow(
-                                buttonService.standardButton("МУД: " + wis, "setWis")))
-                .keyboardRow(
-                        new InlineKeyboardRow(
-                                buttonService.standardButton("ХАР: " + cha, "setCha")))
-                .keyboardRow(
-                        new InlineKeyboardRow(
-                                buttonService.standardButton("Сохранить", "saveCharacter")))
+                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("Имя: " + name, "setCharName")))
+                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("СИЛ: " + str, "setStr")))
+                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("ЛОВ: " + dex, "setDex")))
+                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("ВЫН: " + con, "setCon")))
+                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("ИНТ: " + intellect, "setInt")))
+                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("МУД: " + wis, "setWis")))
+                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("ХАР: " + cha, "setCha")))
+                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("Назад", "backToMainMenu")))
+                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("Сохранить", "saveCharacter")))
                 .build();
 
     }
