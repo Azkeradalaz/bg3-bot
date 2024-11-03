@@ -36,8 +36,13 @@ public class InlineKeyBoardService {
             listOfRows.add(new InlineKeyboardRow(
                     buttonService.standardButton(
                             gameChar.name(),
-                            "edit"+gameChar.name())));
+                            "edit"+gameChar.id()),
+                    buttonService.standardButton("\uD83D\uDDD1",
+                            "delete"+gameChar.id())
+                    )
+            );
         }
+        listOfRows.add(new InlineKeyboardRow(buttonService.standardButton("Назад", "backToMainMenu")));
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup(listOfRows);
         return inlineKeyboardMarkup;
     }

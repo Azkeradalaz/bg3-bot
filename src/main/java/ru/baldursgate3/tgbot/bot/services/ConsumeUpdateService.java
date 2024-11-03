@@ -63,7 +63,7 @@ public class ConsumeUpdateService {
             long userId = update.getCallbackQuery().getFrom().getId();
 
             if (callData.equals("createNewGameCharacter")) {
-                activeGameCharacter.put(userId, new GameCharacterDto("Тав",
+                activeGameCharacter.put(userId, new GameCharacterDto(null,"Тав",
                         userService.getUserDto(userId),(short)10,(short)10,(short)10,(short)10,(short)10,(short)10));
                 GameCharacterDto edit = activeGameCharacter.get(update.getCallbackQuery().getFrom().getId());
 
@@ -98,8 +98,13 @@ public class ConsumeUpdateService {
                 restTemplateService.saveGameCharacter(activeGameCharacter.get(userId));
                 currentMessageCharEdit.remove(userId);
 
-            } else if (callData.equals("getGameCharacterList")) {//todo
+            } else if (callData.equals("getGameCharacterList")) {
                 editMessage = messageService.getCharacterList(chatId, messageId, userId);
+            } else if(callData.matches("delete[\\d]+")){
+
+                System.out.println(callData);
+            }else if(callData.matches("edit[\\d]+")){
+                System.out.println(callData);
             }
         }
 

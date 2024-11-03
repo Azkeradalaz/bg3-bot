@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
-import ru.baldursgate3.tgbot.bot.entities.GameCharacter;
 import ru.baldursgate3.tgbot.bot.model.GameCharacterDto;
 
 @Service
@@ -55,7 +54,7 @@ public class MessageService {
                 .chatId(chatId)
                 .messageId((int) messageId)
                 .text("Ваши персонажи")
-                .replyMarkup(inlineKeyBoardService.getListOfSavedGameCharacter(userId))//todo
+                .replyMarkup(inlineKeyBoardService.getListOfSavedGameCharacter(userId))
                 .build();
     }
 }

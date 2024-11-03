@@ -9,6 +9,7 @@ import ru.baldursgate3.tgbot.bot.model.UserDto;
 @Component
 public class CharacterEditor {
     public static GameCharacterDto setValues(GameCharacterDto gameCharacter, UserState state, String message) {
+        Long id = gameCharacter.id();
         String name = gameCharacter.name();
         UserDto userDto=gameCharacter.userDto();
         short strength=gameCharacter.strength();
@@ -47,6 +48,6 @@ public class CharacterEditor {
             default:
                 break;
         }
-        return new GameCharacterDto(name, userDto, strength,dexterity,constitution,intellect,wisdom,charisma);
+        return new GameCharacterDto(id,name, userDto, strength,dexterity,constitution,intellect,wisdom,charisma);
     }
 }
