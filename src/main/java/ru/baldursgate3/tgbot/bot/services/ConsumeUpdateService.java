@@ -66,7 +66,6 @@ public class ConsumeUpdateService {
                 activeGameCharacter.put(userId, new GameCharacterDto("Тав",
                         userService.getUserDto(userId),(short)10,(short)10,(short)10,(short)10,(short)10,(short)10));
                 GameCharacterDto edit = activeGameCharacter.get(update.getCallbackQuery().getFrom().getId());
-//                edit.setUser(restTemplateService.getUserByTgId(userId));
 
                 editMessage = messageService.characterEdit(chatId, messageId, edit);
                 currentMessageCharEdit.put(userId, messageId);
@@ -100,8 +99,7 @@ public class ConsumeUpdateService {
                 currentMessageCharEdit.remove(userId);
 
             } else if (callData.equals("getGameCharacterList")) {//todo
-                restTemplateService.getListOfGameCharacters(userId);
-                editMessage = messageService.getCharacterList(chatId, messageId);
+                editMessage = messageService.getCharacterList(chatId, messageId, userId);
             }
         }
 

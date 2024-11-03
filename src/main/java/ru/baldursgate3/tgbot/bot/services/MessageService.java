@@ -50,12 +50,12 @@ public class MessageService {
                 .build();
     }
 
-    public EditMessageText getCharacterList(Long chatId, long messageId){
+    public EditMessageText getCharacterList(Long chatId, long messageId, Long userId){
         return EditMessageText.builder()
                 .chatId(chatId)
                 .messageId((int) messageId)
                 .text("Ваши персонажи")
-                .replyMarkup(inlineKeyBoardService.getGreetingInlineKeyboard())//todo
+                .replyMarkup(inlineKeyBoardService.getListOfSavedGameCharacter(userId))//todo
                 .build();
     }
 

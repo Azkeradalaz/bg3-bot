@@ -43,8 +43,8 @@ public class RestTemplateService {
         return "Персонаж " + restTemplate.postForObject(url, gameCharacter, String.class) + " сохранён";
     }
 
-    public List<GameCharacterDto> getListOfGameCharacters(Long userId){//todo
-        String url = HOST + "/character/"+userId;
+    public List<GameCharacterDto> getListOfGameCharacters(Long userTgId){//todo
+        String url = HOST + "/character/tgid/"+userTgId;
         List<GameCharacterDto> gameCharacterList = restTemplate.getForObject(url, List.class);
         System.out.println(gameCharacterList);
         return gameCharacterList;
