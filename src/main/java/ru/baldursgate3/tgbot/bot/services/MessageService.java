@@ -58,15 +58,4 @@ public class MessageService {
                 .replyMarkup(inlineKeyBoardService.getListOfSavedGameCharacter(userId))//todo
                 .build();
     }
-
-
-
-
-
-
-
-
-    //todo лист персов
-
-
 }
