@@ -65,6 +65,7 @@ public class ConsumeUpdateService {
             String callData = update.getCallbackQuery().getData();
             long messageId = update.getCallbackQuery().getMessage().getMessageId();
             long userId = update.getCallbackQuery().getFrom().getId();
+            String userName = userService.getUserName(userId);
 
             if (callData.equals("createNewGameCharacter")) {
                 activeGameCharacter.put(userId, new GameCharacterDto(null, "Тав",
@@ -96,7 +97,8 @@ public class ConsumeUpdateService {
                 userStateService.set(userId, UserState.CHANGING_CHARACTER_CHA);
             } else if (callData.equals("saveCharacter")) {
                 message = messageService.statChangeMessage(chatId, "Персонаж " + activeGameCharacter.get(userId).name() + " сохранён");
-                deleteMessage = messageService.deleteMessage(chatId, messageId);
+                editMessage = messageService.backToMainMenuMessage(chatId,userName,messageId);
+//                deleteMessage = messageService.deleteMessage(chatId, messageId);
                 restTemplateService.saveGameCharacter(activeGameCharacter.get(userId));
                 userStateService.set(userId,UserState.DEFAULT);
                 currentMessageCharEdit.remove(userId);
@@ -113,7 +115,6 @@ public class ConsumeUpdateService {
                 editMessage = messageService.characterEdit(chatId, messageId, edit);
                 currentMessageCharEdit.put(userId, messageId);
             } else if (callData.equals("backToMainMenu")) {
-                String userName = userService.getUserName(userId);
                 editMessage = messageService.backToMainMenuMessage(chatId,userName,messageId);
             }
         }
