@@ -5,7 +5,9 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 
+import java.util.List;
+
 public record MessageDto(SendMessage sendMessage,
                          EditMessageText editMessageText,
-                         DeleteMessage deleteMessage) {
+                         List<DeleteMessage> deleteMessage) {
 }
