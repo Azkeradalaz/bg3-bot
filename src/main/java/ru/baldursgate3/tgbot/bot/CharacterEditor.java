@@ -1,7 +1,6 @@
 package ru.baldursgate3.tgbot.bot;
 
 import org.springframework.stereotype.Component;
-import ru.baldursgate3.tgbot.bot.entities.GameCharacter;
 import ru.baldursgate3.tgbot.bot.enums.UserState;
 import ru.baldursgate3.tgbot.bot.model.GameCharacterDto;
 import ru.baldursgate3.tgbot.bot.model.UserDto;

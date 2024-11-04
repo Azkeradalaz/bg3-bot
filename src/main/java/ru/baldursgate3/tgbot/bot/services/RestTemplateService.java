@@ -4,8 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import ru.baldursgate3.tgbot.bot.entities.GameCharacter;
-import ru.baldursgate3.tgbot.bot.entities.User;
 import ru.baldursgate3.tgbot.bot.model.GameCharacterDto;
 import ru.baldursgate3.tgbot.bot.model.UserDto;
 
@@ -39,14 +37,28 @@ public class RestTemplateService {
     }
 
     public String saveGameCharacter(GameCharacterDto gameCharacter) {
-        String url = HOST + "/character";
-        return "Персонаж " + restTemplate.postForObject(url, gameCharacter, String.class) + " сохранён";
+
+        if(gameCharacter.id()==null){
+            String url = HOST + "/character";
+            restTemplate.postForObject(url, gameCharacter, String.class);
+        }
+        else {
+            String url = HOST + "/character/"+gameCharacter.id();
+            restTemplate.put(url,gameCharacter);
+        }
+        return "Персонаж " + gameCharacter.name() + " сохранён";
     }
 
-    public List<GameCharacterDto> getListOfGameCharacters(Long userTgId){//todo
+    public List<GameCharacterDto> getListOfGameCharacters(Long userTgId){
         String url = HOST + "/character/tgid/"+userTgId;
         List<GameCharacterDto> gameCharacterList = restTemplate.getForObject(url, List.class);
         return gameCharacterList;
+    }
+
+    public GameCharacterDto getGameCharacter(Long gameCharId){
+        String url = HOST + "/character/"+gameCharId;
+        GameCharacterDto gameCharacterDto =restTemplate.getForObject(url,GameCharacterDto.class);
+        return gameCharacterDto;
     }
 
     public void deleteCharacter(Long charId){

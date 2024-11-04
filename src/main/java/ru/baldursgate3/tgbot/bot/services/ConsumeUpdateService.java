@@ -21,10 +21,12 @@ public class ConsumeUpdateService {
 
     private final RestTemplateService restTemplateService;
     private final MessageService messageService;
+    private final UserStateService userStateService;
     private final UserService userService;
     private final Map<Long, GameCharacterDto> activeGameCharacter = new HashMap<>();
-    private final Map<Long, UserState> userStateMap = new HashMap<>();
     private final Map<Long, Long> currentMessageCharEdit = new HashMap<>();
+
+
 
 
     public MessageDto consumeUpdate(Update update) {
@@ -38,16 +40,19 @@ public class ConsumeUpdateService {
             long userId = update.getMessage().getFrom().getId();
 
             if (userService.isRegistered(userId)) {
-                if (!(userStateMap.get(userId) == UserState.DEFAULT || userStateMap.get(userId) == null)) {
-                    activeGameCharacter.put(userId, CharacterEditor.setValues(activeGameCharacter.get(userId), userStateMap.get(userId), messageText));
-                    userStateMap.put(userId, UserState.DEFAULT);
+                if (!(userStateService.isOfState(userId, UserState.DEFAULT)|| userStateService.isOfState(userId,null))) {
+                    activeGameCharacter.put(userId, CharacterEditor.setValues(
+                            activeGameCharacter.get(userId),
+                            userStateService.get(userId),
+                            messageText));
+                    userStateService.set(userId, UserState.DEFAULT);
                     editMessage = messageService.characterEdit(
                             chatId,
                             currentMessageCharEdit.get(userId),
                             activeGameCharacter.get(userId));
                 } else {
                     String userName = userService.getUserName(userId);
-                    userStateMap.put(userId, UserState.DEFAULT);
+                    userStateService.set(userId, UserState.DEFAULT);
                     message = messageService.greetingRegisteredUser(chatId, userName);
                 }
             } else {
@@ -70,30 +75,30 @@ public class ConsumeUpdateService {
                 currentMessageCharEdit.put(userId, messageId);
             } else if (callData.equals("setCharName")) {
                 message = messageService.statChangeMessage(chatId, "Введите имя персонажа:");
-                userStateMap.put(userId, UserState.CHANGING_CHARACTER_NAME);
+                userStateService.set(userId, UserState.CHANGING_CHARACTER_NAME);
             } else if (callData.equals("setStr")) {
                 message = messageService.statChangeMessage(chatId, "Введите показатель силы:");
-                userStateMap.put(userId, UserState.CHANGING_CHARACTER_STR);
+                userStateService.set(userId, UserState.CHANGING_CHARACTER_STR);
             } else if (callData.equals("setDex")) {
                 message = messageService.statChangeMessage(chatId, "Введите показатель ловкости:");
-                userStateMap.put(userId, UserState.CHANGING_CHARACTER_DEX);
+                userStateService.set(userId, UserState.CHANGING_CHARACTER_DEX);
             } else if (callData.equals("setCon")) {
                 message = messageService.statChangeMessage(chatId, "Введите показатель выносливости:");
-                userStateMap.put(userId, UserState.CHANGING_CHARACTER_CON);
+                userStateService.set(userId, UserState.CHANGING_CHARACTER_CON);
             } else if (callData.equals("setInt")) {
                 message = messageService.statChangeMessage(chatId, "Введите показатель интеллекта:");
-                userStateMap.put(userId, UserState.CHANGING_CHARACTER_INT);
+                userStateService.set(userId, UserState.CHANGING_CHARACTER_INT);
             } else if (callData.equals("setWis")) {
                 message = messageService.statChangeMessage(chatId, "Введите показатель мудрости:");
-                userStateMap.put(userId, UserState.CHANGING_CHARACTER_WIS);
+                userStateService.set(userId, UserState.CHANGING_CHARACTER_WIS);
             } else if (callData.equals("setCha")) {
                 message = messageService.statChangeMessage(chatId, "Введите показатель харизмы:");
-                userStateMap.put(userId, UserState.CHANGING_CHARACTER_CHA);
+                userStateService.set(userId, UserState.CHANGING_CHARACTER_CHA);
             } else if (callData.equals("saveCharacter")) {
                 message = messageService.statChangeMessage(chatId, "Персонаж " + activeGameCharacter.get(userId).name() + " сохранён");
                 deleteMessage = messageService.deleteMessage(chatId, messageId);
-
                 restTemplateService.saveGameCharacter(activeGameCharacter.get(userId));
+                userStateService.set(userId,UserState.DEFAULT);
                 currentMessageCharEdit.remove(userId);
 
             } else if (callData.equals("getGameCharacterList")) {
@@ -103,9 +108,8 @@ public class ConsumeUpdateService {
                 editMessage = messageService.getCharacterList(chatId, messageId, userId);
 
             } else if (callData.matches("edit[\\d]+")) {
-
-
-                GameCharacterDto edit = activeGameCharacter.get(update.getCallbackQuery().getFrom().getId());
+                GameCharacterDto edit = restTemplateService.getGameCharacter(Long.parseLong(callData.replace("edit","")));
+                activeGameCharacter.put(userId,edit);
                 editMessage = messageService.characterEdit(chatId, messageId, edit);
                 currentMessageCharEdit.put(userId, messageId);
             } else if (callData.equals("backToMainMenu")) {
