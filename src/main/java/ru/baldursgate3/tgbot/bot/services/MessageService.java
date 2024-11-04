@@ -7,10 +7,31 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import ru.baldursgate3.tgbot.bot.model.GameCharacterDto;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class MessageService {
     private final InlineKeyBoardService inlineKeyBoardService;
+    Map<Long,List<Long>> deleteMessage = new HashMap<>();
+
+    public void putDeleteMessage(Long chatId, Long messageId){
+        if(deleteMessage.get(chatId)==null){
+            deleteMessage.put(chatId,new ArrayList<>());
+        }
+        deleteMessage.get(chatId).add(messageId);
+    }
+    public List<DeleteMessage> getDeleteMessages(Long chatId){
+        List<DeleteMessage> delete = new ArrayList<>();
+        for (Long messageId:deleteMessage.get(chatId)) {
+            delete.add(deleteMessage(chatId,messageId));
+        }
+        deleteMessage.remove(chatId);
+        return delete;
+    }
 
     public SendMessage greetingNonRegisteredUser(Long chatId) {
         return SendMessage.builder().chatId(chatId).text("Представьтесь, пожалуйста.").build();

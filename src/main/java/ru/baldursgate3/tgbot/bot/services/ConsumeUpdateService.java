@@ -11,7 +11,9 @@ import ru.baldursgate3.tgbot.bot.enums.UserState;
 import ru.baldursgate3.tgbot.bot.model.GameCharacterDto;
 import ru.baldursgate3.tgbot.bot.model.MessageDto;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -32,14 +34,17 @@ public class ConsumeUpdateService {
     public MessageDto consumeUpdate(Update update) {
         SendMessage message = null;
         EditMessageText editMessage = null;
-        DeleteMessage deleteMessage = null;
+        List<DeleteMessage> deleteMessages = null;
+
 
         if (update.hasMessage() && update.getMessage().hasText()) {
             Long chatId = update.getMessage().getChatId();
             String messageText = update.getMessage().getText();
             long userId = update.getMessage().getFrom().getId();
+            long messageId = update.getMessage().getMessageId();
 
             if (userService.isRegistered(userId)) {
+                messageService.putDeleteMessage(chatId,messageId);
                 if (!(userStateService.isOfState(userId, UserState.DEFAULT)|| userStateService.isOfState(userId,null))) {
                     activeGameCharacter.put(userId, CharacterEditor.setValues(
                             activeGameCharacter.get(userId),
@@ -57,6 +62,7 @@ public class ConsumeUpdateService {
                 }
             } else {
                 message = userService.processNonRegisteredUser(chatId, userId, messageText);
+                messageService.putDeleteMessage(chatId,messageId);
             }
 
 
@@ -71,7 +77,6 @@ public class ConsumeUpdateService {
                 activeGameCharacter.put(userId, new GameCharacterDto(null, "Тав",
                         userService.getUserDto(userId), (short) 10, (short) 10, (short) 10, (short) 10, (short) 10, (short) 10));
                 GameCharacterDto edit = activeGameCharacter.get(update.getCallbackQuery().getFrom().getId());
-
                 editMessage = messageService.characterEdit(chatId, messageId, edit);
                 currentMessageCharEdit.put(userId, messageId);
             } else if (callData.equals("setCharName")) {
@@ -98,10 +103,10 @@ public class ConsumeUpdateService {
             } else if (callData.equals("saveCharacter")) {
                 message = messageService.statChangeMessage(chatId, "Персонаж " + activeGameCharacter.get(userId).name() + " сохранён");
                 editMessage = messageService.backToMainMenuMessage(chatId,userName,messageId);
-//                deleteMessage = messageService.deleteMessage(chatId, messageId);
                 restTemplateService.saveGameCharacter(activeGameCharacter.get(userId));
                 userStateService.set(userId,UserState.DEFAULT);
                 currentMessageCharEdit.remove(userId);
+                deleteMessages = messageService.getDeleteMessages(chatId);
 
             } else if (callData.equals("getGameCharacterList")) {
                 editMessage = messageService.getCharacterList(chatId, messageId, userId);
@@ -119,7 +124,7 @@ public class ConsumeUpdateService {
             }
         }
 
-        return new MessageDto(message, editMessage, deleteMessage);
+        return new MessageDto(message, editMessage, deleteMessages);
 
     }
 
