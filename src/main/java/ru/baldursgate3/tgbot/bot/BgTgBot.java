@@ -8,15 +8,16 @@ import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsume
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 import ru.baldursgate3.tgbot.bot.config.Bg3Config;
+import ru.baldursgate3.tgbot.bot.event.DeleteMessagesEvent;
 import ru.baldursgate3.tgbot.bot.event.EditMessageTextEvent;
 import ru.baldursgate3.tgbot.bot.event.SendMessageEvent;
-import ru.baldursgate3.tgbot.bot.services.ConsumeUpdateService;
 import ru.baldursgate3.tgbot.bot.services.MessageService;
 import ru.baldursgate3.tgbot.bot.services.UserSessionStateService;
 
@@ -24,13 +25,12 @@ import ru.baldursgate3.tgbot.bot.services.UserSessionStateService;
 @Component
 public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
     private final TelegramClient telegramClient;
-    private final ConsumeUpdateService consumeUpdateService;
     private final MessageService messageService;
     private final UserSessionStateService userSessionStateService;
     private final Bg3Config bg3ConfigProperties;
 
-    public BgTgBot(ConsumeUpdateService consumeUpdateService, MessageService messageService, UserSessionStateService userSessionStateService, Bg3Config bg3ConfigProperties) {
-        this.consumeUpdateService = consumeUpdateService;
+    //иначе не создаётся telegramClient.
+    public BgTgBot(MessageService messageService, UserSessionStateService userSessionStateService, Bg3Config bg3ConfigProperties) {
         this.messageService = messageService;
         this.userSessionStateService = userSessionStateService;
         this.bg3ConfigProperties = bg3ConfigProperties;
@@ -59,36 +59,6 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
             Long chatId = update.getCallbackQuery().getMessage().getChatId();
             userSessionStateService.getSessionState(userId, chatId).consumeCallbackQuery(update);
         }
-
-
-//        MessageDto messageDto = consumeUpdateService.consumeUpdate(update);
-//        SendMessage sendMessage = messageDto.sendMessage();
-//        EditMessageText editMessageText = messageDto.editMessageText();
-//        List<DeleteMessage> deleteMessage = messageDto.deleteMessage();
-//        if (sendMessage != null) {
-//            try {
-//                Message tmp = telegramClient.execute(sendMessage);
-//                messageService.putDeleteMessage(tmp.getChatId(), tmp.getMessageId().longValue());
-//            } catch (TelegramApiException e) {
-//                log.error("Ошибка отправки сообщения {}", e);
-//            }
-//        }
-//        if (editMessageText != null) {
-//            try {
-//                telegramClient.execute(editMessageText);
-//            } catch (TelegramApiException e) {
-//                log.error("Ошибка изменения сообщения {}", e);
-//            }
-//        }
-//        if (deleteMessage != null) {
-//            for (DeleteMessage delete : deleteMessage) {
-//                try {
-//                    telegramClient.execute(delete);
-//                } catch (TelegramApiException e) {
-//                    log.error("Ошибка удаления сообщения {}", e);
-//                }
-//            }
-//        }
     }
 
     @EventListener
@@ -96,7 +66,11 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
         SendMessage sendMessage = sendMessageEvent.getSendMessage();
         try {
             Message tmp = telegramClient.execute(sendMessage);
-            messageService.putDeleteMessage(tmp.getChatId(), tmp.getMessageId().longValue());
+            if (messageService.getEditMessage(tmp.getChatId()) == null) {
+                messageService.putEditMessage(tmp.getChatId(), tmp.getMessageId().longValue());
+            } else if (messageService.getEditMessage(tmp.getChatId()) != tmp.getMessageId().longValue()) {
+                messageService.putDeleteMessage(tmp.getChatId(), tmp.getMessageId().longValue());
+            }
         } catch (TelegramApiException e) {
             log.error("Ошибка отправки сообщения {}", e);
         }
@@ -109,6 +83,17 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
             telegramClient.execute(editMessageText);
         } catch (TelegramApiException e) {
             log.error("Ошибка изменения сообщения {}", e);
+        }
+    }
+
+    @EventListener
+    public void deleteMessageEventHandler(DeleteMessagesEvent deleteMessage) {
+        for (DeleteMessage delete : deleteMessage.getDeleteMessages()) {
+            try {
+                telegramClient.execute(delete);
+            } catch (TelegramApiException e) {
+                log.error("Ошибка удаления сообщения {}", e);
+            }
         }
     }
 }

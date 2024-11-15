@@ -8,6 +8,7 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 public class EditMessageTextEvent extends ApplicationEvent {
 
     private EditMessageText editMessageText;
+
     public EditMessageTextEvent(Object source, EditMessageText editMessageText) {
         super(source);
         this.editMessageText = editMessageText;

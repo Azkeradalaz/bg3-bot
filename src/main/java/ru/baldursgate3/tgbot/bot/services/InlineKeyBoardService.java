@@ -57,7 +57,7 @@ public class InlineKeyBoardService {
                 .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("ИНТ: " + intellect, "setInt")))
                 .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("МУД: " + wis, "setWis")))
                 .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("ХАР: " + cha, "setCha")))
-                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("Назад", "backToMainMenu")))
+                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("Назад", "backToCharacterList")))
                 .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("Сохранить", "saveCharacter")))
                 .build();
 
