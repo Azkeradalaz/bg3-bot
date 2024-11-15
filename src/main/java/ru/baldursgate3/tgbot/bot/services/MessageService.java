@@ -1,6 +1,7 @@
 package ru.baldursgate3.tgbot.bot.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
@@ -15,6 +16,7 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class MessageService {
+
     private final InlineKeyBoardService inlineKeyBoardService;
     Map<Long,List<Long>> deleteMessage = new HashMap<>();
 
@@ -34,19 +36,20 @@ public class MessageService {
     }
 
     public SendMessage greetingNonRegisteredUser(Long chatId) {
+
         return SendMessage.builder().chatId(chatId).text("Представьтесь, пожалуйста.").build();
     }
 
-    public SendMessage greetingRegisteredUser(Long chatId, String responseUserMessage) {
-        return SendMessage.builder().chatId(chatId).text("Добрый день, " + responseUserMessage +
+    public SendMessage greetingRegisteredUser(Long chatId, String userName) {
+        return SendMessage.builder().chatId(chatId).text("Добрый день, " + userName +
                         "! Доступные команды.")
                 .replyMarkup(inlineKeyBoardService.getGreetingInlineKeyboard()).build();
     }
-    public EditMessageText backToMainMenuMessage(Long chatId, String responseUserMessage, Long messageId) {
+    public EditMessageText backToMainMenuMessage(Long chatId, String userName, Long messageId) {
         return EditMessageText.builder()
                 .chatId(chatId)
                 .messageId(messageId.intValue())
-                .text("Добрый день, " + responseUserMessage + "! Доступные команды.")
+                .text("Добрый день, " + userName + "! Доступные команды.")
                 .replyMarkup(inlineKeyBoardService.getGreetingInlineKeyboard())
                 .build();
 

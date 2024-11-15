@@ -28,9 +28,6 @@ public class ConsumeUpdateService {
     private final Map<Long, GameCharacterDto> activeGameCharacter = new HashMap<>();
     private final Map<Long, Long> currentMessageCharEdit = new HashMap<>();
 
-
-
-
     public MessageDto consumeUpdate(Update update) {
         SendMessage message = null;
         EditMessageText editMessage = null;
