@@ -16,7 +16,7 @@ public class UserService {
     private final Set<Long> setOfUsersToRegister = new HashSet<>();
 
     public boolean isRegistered(Long userId) {
-        return restTemplateService.getUserByTgId(userId) != null;
+        return (restTemplateService.getUserByTgId(userId) != null);
     }
 
     public void setToRegister(Long userId) {

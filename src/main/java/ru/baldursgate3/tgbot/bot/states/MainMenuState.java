@@ -3,7 +3,7 @@ package ru.baldursgate3.tgbot.bot.states;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -17,7 +17,7 @@ import ru.baldursgate3.tgbot.bot.services.MessageService;
 import ru.baldursgate3.tgbot.bot.services.UserService;
 
 @Slf4j
-@Service
+@Component
 @RequiredArgsConstructor
 public class MainMenuState implements UserSessionState {
     private final UserService userService;
@@ -28,8 +28,15 @@ public class MainMenuState implements UserSessionState {
     @Override
     public void consumeMessage(Update update) {
         Long userId = update.getMessage().getFrom().getId();
-        SendMessage sendMessage = messageService.greetingRegisteredUser(userId, userService.getUserName(userId));
-        applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
+        Long chatId = update.getMessage().getChatId();
+
+        if (messageService.getEditMessage(chatId) == null) {
+            SendMessage sendMessage = messageService.greetingRegisteredUser(userId, userService.getUserName(userId));
+            applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
+        } else {
+            SendMessage sendMessage = messageService.unknownCommandMessage(chatId);
+            applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
+        }
     }
 
     @Override
@@ -38,19 +45,27 @@ public class MainMenuState implements UserSessionState {
         String callData = update.getCallbackQuery().getData();
         Long chatId = update.getCallbackQuery().getMessage().getChatId();
         Long messageId = update.getCallbackQuery().getMessage().getMessageId().longValue();
-        EditMessageText editMessageText;
+        EditMessageText editMessageText = null;
+        UserState userState = null;
 
         if (callData.equals("createNewGameCharacter")) {
             currentGameCharacterEditService.put(userId, GameCharacterEditor.getDefault(userService.getUserDto(userId)));
             editMessageText = messageService.characterEdit(chatId, messageId, currentGameCharacterEditService.get(userId));
-            applicationEventPublisher.publishEvent(new EditMessageTextEvent(this, editMessageText));
-            applicationEventPublisher.publishEvent(new UserSessionStateChangeEvent(this, userId, UserState.CHARACTER_EDIT));
-
+            userState = UserState.CHARACTER_EDIT;
 
         } else if (callData.equals("getGameCharacterList")) {
             editMessageText = messageService.getCharacterList(chatId, messageId, userId);
+            userState = UserState.CHARACTER_LIST;
+        } else {
+            SendMessage sendMessage = messageService.unknownCommandMessage(chatId);
+            applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
+        }
+
+        if (editMessageText != null) {
             applicationEventPublisher.publishEvent(new EditMessageTextEvent(this, editMessageText));
-            applicationEventPublisher.publishEvent(new UserSessionStateChangeEvent(this, userId, UserState.CHARACTER_LIST));
+        }
+        if (userState != null) {
+            applicationEventPublisher.publishEvent(new UserSessionStateChangeEvent(this, userId, userState));
         }
     }
 }

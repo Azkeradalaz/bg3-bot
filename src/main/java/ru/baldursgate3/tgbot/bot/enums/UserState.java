@@ -4,6 +4,7 @@ public enum UserState {
     REGISTER,
     MAIN_MENU,
     CHARACTER_LIST,
-    CHARACTER_EDIT
+    CHARACTER_EDIT,
+    CHARACTER_DELETE
 
 }

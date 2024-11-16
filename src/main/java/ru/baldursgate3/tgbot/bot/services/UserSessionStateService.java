@@ -23,6 +23,7 @@ public class UserSessionStateService {
     private final MainMenuState mainMenuState;
     private final GameCharacterEditState gameCharacterEditState;
     private final GameCharacterListState gameCharacterListState;
+    private final GameCharacterDeleteState gameCharacterDeleteState;
     private final UserService userService;
     private final Map<Long, Session> sessionMap = new HashMap<>();
 
@@ -30,10 +31,10 @@ public class UserSessionStateService {
         UserSessionState userSessionState = null;
         if (userService.isRegistered(userId)) {
             if (sessionMap.get(userId) == null) {
-                putSession(userId, chatId, UserState.MAIN_MENU, null, null);//todo полная хрень, разобраться с датами. скорее всего поставить таймстампы
+                putSession(userId, chatId, UserState.MAIN_MENU, null, null);
             }
         } else {
-            putSession(userId, chatId, UserState.REGISTER, null, null);//todo полная хрень, разобраться с датами. скорее всего поставить таймстампы\
+            putSession(userId, chatId, UserState.REGISTER, null, null);
         }
         Session session = sessionMap.get(userId);
         UserState state = session.getUserState();
@@ -51,6 +52,8 @@ public class UserSessionStateService {
             case CHARACTER_EDIT:
                 userSessionState = gameCharacterEditState;
                 break;
+            case CHARACTER_DELETE:
+                userSessionState = gameCharacterDeleteState;
             default:
                 break;
         }

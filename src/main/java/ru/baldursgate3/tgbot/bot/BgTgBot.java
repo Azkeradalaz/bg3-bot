@@ -1,6 +1,7 @@
 package ru.baldursgate3.tgbot.bot;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
@@ -29,7 +30,7 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
     private final UserSessionStateService userSessionStateService;
     private final Bg3Config bg3ConfigProperties;
 
-    //иначе не создаётся telegramClient.
+    /*иначе не создаётся telegramClient.*/
     public BgTgBot(MessageService messageService, UserSessionStateService userSessionStateService, Bg3Config bg3ConfigProperties) {
         this.messageService = messageService;
         this.userSessionStateService = userSessionStateService;
@@ -53,6 +54,8 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
         if (update.hasMessage()) {
             Long userId = update.getMessage().getFrom().getId();
             Long chatId = update.getMessage().getChatId();
+            Long messageId = update.getMessage().getMessageId().longValue();
+            messageService.putDeleteMessage(chatId,messageId);
             userSessionStateService.getSessionState(userId, chatId).consumeMessage(update);
         } else if (update.hasCallbackQuery()) {
             Long userId = update.getCallbackQuery().getFrom().getId();
@@ -77,17 +80,18 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
     }
 
     @EventListener
-    public void editMessageTextEventHandler(EditMessageTextEvent editMessageTextEvent) {
+    public ApplicationEvent editMessageTextEventHandler(EditMessageTextEvent editMessageTextEvent) {
         EditMessageText editMessageText = editMessageTextEvent.getEditMessageText();
         try {
             telegramClient.execute(editMessageText);
         } catch (TelegramApiException e) {
             log.error("Ошибка изменения сообщения {}", e);
         }
+        return new DeleteMessagesEvent(this, messageService.getDeleteMessages(Long.valueOf(editMessageTextEvent.getEditMessageText().getChatId())));
     }
 
     @EventListener
-    public void deleteMessageEventHandler(DeleteMessagesEvent deleteMessage) {
+    public void deleteMessageEventHandler(DeleteMessagesEvent deleteMessage) { //запускается после каждого обновления сообщения
         for (DeleteMessage delete : deleteMessage.getDeleteMessages()) {
             try {
                 telegramClient.execute(delete);
