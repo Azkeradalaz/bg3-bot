@@ -30,8 +30,8 @@ public class GameCharacterListState implements UserSessionState {
 
     @Override
     public void consumeMessage(Update update) {
-        Long chatId = update.getCallbackQuery().getMessage().getChatId();
-        SendMessage sendMessage = messageService.unknownCommandMessage( chatId);
+        Long chatId = update.getMessage().getChatId();
+        SendMessage sendMessage = messageService.unknownCommandMessage(chatId);
         applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
     }
 
@@ -61,7 +61,7 @@ public class GameCharacterListState implements UserSessionState {
             userState = UserState.MAIN_MENU;
             editMessageText = messageService.backToMainMenuMessage(chatId, userName, editMessage);
         } else {
-            SendMessage sendMessage = messageService.unknownCommandMessage( chatId);
+            SendMessage sendMessage = messageService.unknownCommandMessage(chatId);
             applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
         }
 

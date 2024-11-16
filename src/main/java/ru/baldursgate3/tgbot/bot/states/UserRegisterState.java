@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.baldursgate3.tgbot.bot.enums.UserState;
 import ru.baldursgate3.tgbot.bot.event.EditMessageTextEvent;
@@ -45,6 +46,9 @@ public class UserRegisterState implements UserSessionState {
 
     @Override
     public void consumeCallbackQuery(Update update) {
+        Long chatId = update.getCallbackQuery().getMessage().getChatId();
+        SendMessage sendMessage = messageService.unknownCommandMessage( chatId);
+        applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
 
     }
 }

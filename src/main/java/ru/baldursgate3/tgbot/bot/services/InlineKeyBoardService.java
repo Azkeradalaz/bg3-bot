@@ -45,8 +45,7 @@ public class InlineKeyBoardService {
             );
         }
         listOfRows.add(new InlineKeyboardRow(buttonService.standardButton("Назад", "backToMainMenu")));
-        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup(listOfRows);
-        return inlineKeyboardMarkup;
+        return new InlineKeyboardMarkup(listOfRows);
     }
 
     public InlineKeyboardMarkup getCharStatsKeyboard(String name, Short str, Short dex, Short con, Short intellect, Short wis, Short cha, String callBack) {
