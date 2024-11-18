@@ -3,7 +3,6 @@ package ru.baldursgate3.tgbot.bot.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.baldursgate3.tgbot.bot.model.UserDto;
 
 import java.util.HashSet;
@@ -14,17 +13,17 @@ import java.util.Set;
 public class UserService {
     private final RestTemplateService restTemplateService;
     private final MessageService messageService;
-    private Set<Long> setOfUsersToRegister = new HashSet<>();
+    private final Set<Long> setOfUsersToRegister = new HashSet<>();
 
     public boolean isRegistered(Long userId) {
-        return restTemplateService.getUserByTgId(userId) != null;
+        return (restTemplateService.getUserByTgId(userId) != null);
     }
 
-    public void setToRegister(Long userId){
+    public void setToRegister(Long userId) {
         setOfUsersToRegister.add(userId);
     }
 
-    public boolean isSetToRegister(Long userId){
+    public boolean isSetToRegister(Long userId) {
         return setOfUsersToRegister.contains(userId);
     }
 
@@ -37,18 +36,17 @@ public class UserService {
         return restTemplateService.getUserByTgId(userId).name();
     }
 
-    public SendMessage processNonRegisteredUser(Long chatId,Long userId,String messageText) {
-        if (isSetToRegister(userId)){
+    public SendMessage processNonRegisteredUser(Long chatId, Long userId, String messageText) {
+        if (isSetToRegister(userId)) {
             String registeredUser = registerUser(userId, messageText);
-            return messageService.greetingRegisteredUser(chatId,registeredUser);
-        }else {
+            return messageService.greetingRegisteredUser(chatId, registeredUser);
+        } else {
             setToRegister(userId);
             return messageService.greetingNonRegisteredUser(chatId);
         }
-
     }
-    public UserDto getUserDto(Long userId){
-        return restTemplateService.getUserByTgId(userId);
 
+    public UserDto getUserDto(Long userId) {
+        return restTemplateService.getUserByTgId(userId);
     }
 }
