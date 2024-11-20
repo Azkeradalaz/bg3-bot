@@ -11,6 +11,7 @@ import ru.baldursgate3.tgbot.bot.model.UserDto;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -81,6 +82,7 @@ public class RestTemplateService {
     }
     public void updateSessionGameCharacter(Long userId, Long gameCharacterId) {
         String url = HOST + "/session/gamechar/" + userId;
-        restTemplate.put(url, gameCharacterId);
+        Optional<Long> tmp = Optional.ofNullable(gameCharacterId);
+        restTemplate.put(url, tmp);
     }
 }
