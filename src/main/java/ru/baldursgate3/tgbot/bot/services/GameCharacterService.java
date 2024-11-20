@@ -1,11 +1,24 @@
-package ru.baldursgate3.tgbot.bot;
+package ru.baldursgate3.tgbot.bot.services;
 
-import ru.baldursgate3.tgbot.bot.enums.UserState;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import ru.baldursgate3.tgbot.bot.model.GameCharacterDto;
 import ru.baldursgate3.tgbot.bot.model.UserDto;
 
-public class GameCharacterEditor {
-    public static GameCharacterDto setValues(GameCharacterDto gameCharacter, String previousCallBack, String message) {
+@Service
+@RequiredArgsConstructor
+public class GameCharacterService {
+    private final RestTemplateService restTemplateService;
+
+
+    public Long save(GameCharacterDto gameCharacterDto){
+        return restTemplateService.saveGameCharacter(gameCharacterDto);
+    }
+
+    public void delete(Long gameCharacterId){
+        restTemplateService.deleteGameCharacter(gameCharacterId);
+    }
+    public GameCharacterDto setValues(GameCharacterDto gameCharacter, String previousCallBack, String message) {
         Long id = gameCharacter.id();
         String name = gameCharacter.name();
         UserDto userDto = gameCharacter.userDto();
@@ -48,7 +61,16 @@ public class GameCharacterEditor {
         return new GameCharacterDto(id, name, userDto, strength, dexterity, constitution, intellect, wisdom, charisma);
     }
 
-    public static GameCharacterDto getDefault(UserDto userDto) {
+    public GameCharacterDto getDefault(UserDto userDto) {
         return new GameCharacterDto(null, "Тав", userDto, (short) 10, (short) 10, (short) 10, (short) 10, (short) 10, (short) 10);
     }
+
+    public String getGameCharacterName(Long gameCharacterId){
+        return restTemplateService.getGameCharacter(gameCharacterId).name();
+    }
+
+    public GameCharacterDto getGameCharacter(Long gameCharacterId){
+        return restTemplateService.getGameCharacter(gameCharacterId);
+    }
+
 }

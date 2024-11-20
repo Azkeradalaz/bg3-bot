@@ -20,21 +20,22 @@ import ru.baldursgate3.tgbot.bot.event.DeleteMessagesEvent;
 import ru.baldursgate3.tgbot.bot.event.EditMessageTextEvent;
 import ru.baldursgate3.tgbot.bot.event.SendMessageEvent;
 import ru.baldursgate3.tgbot.bot.services.MessageService;
-import ru.baldursgate3.tgbot.bot.services.UserSessionStateService;
+import ru.baldursgate3.tgbot.bot.services.SessionService;
+import ru.baldursgate3.tgbot.bot.services.StateHandlerService;
 
 @Slf4j
 @Component
 public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
     private final TelegramClient telegramClient;
     private final MessageService messageService;
-    private final UserSessionStateService userSessionStateService;
     private final Bg3Config bg3ConfigProperties;
+    private final StateHandlerService stateHandlerService;
 
     /*иначе не создаётся telegramClient.*/
-    public BgTgBot(MessageService messageService, UserSessionStateService userSessionStateService, Bg3Config bg3ConfigProperties) {
+    public BgTgBot(MessageService messageService, Bg3Config bg3ConfigProperties, StateHandlerService stateHandlerService) {
         this.messageService = messageService;
-        this.userSessionStateService = userSessionStateService;
         this.bg3ConfigProperties = bg3ConfigProperties;
+        this.stateHandlerService = stateHandlerService;
         telegramClient = new OkHttpTelegramClient(getBotToken());
     }
 
@@ -54,13 +55,17 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
         if (update.hasMessage()) {
             Long userId = update.getMessage().getFrom().getId();
             Long chatId = update.getMessage().getChatId();
+            String message = update.getMessage().getText();
             Long messageId = update.getMessage().getMessageId().longValue();
-            messageService.putDeleteMessage(chatId,messageId);
-            userSessionStateService.getSessionState(userId, chatId).consumeMessage(update);
+            messageService.putDeleteMessage(chatId, messageId);
+            stateHandlerService.getSessionState(userId)
+                    .consumeMessage(userId, chatId, message);
         } else if (update.hasCallbackQuery()) {
             Long userId = update.getCallbackQuery().getFrom().getId();
             Long chatId = update.getCallbackQuery().getMessage().getChatId();
-            userSessionStateService.getSessionState(userId, chatId).consumeCallbackQuery(update);
+            String callData = update.getCallbackQuery().getData();
+            stateHandlerService.getSessionState(userId)
+                    .consumeCallbackQuery(userId, chatId, callData);
         }
     }
 

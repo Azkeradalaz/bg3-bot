@@ -61,7 +61,6 @@ public class InlineKeyBoardService {
                 .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("Назад", callBack)))
                 .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("Сохранить", "saveCharacter")))
                 .build();
-
     }
 
     public InlineKeyboardMarkup getDeleteGameCharacterKeyboard() {

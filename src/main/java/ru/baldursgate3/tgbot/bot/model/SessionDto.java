@@ -1,8 +1,7 @@
 package ru.baldursgate3.tgbot.bot.model;
 
-import ru.baldursgate3.tgbot.bot.states.UserSessionState;
+public record SessionDto(Long userTgId,
+                         Long gameCharacterId,
+                         String userState) {
 
-import java.util.Date;
-
-public record SessionDto (Long sessionId, Long userId, Long chatId, UserSessionState userSessionState, Date dateCreated, Date dateExpire){
 }
