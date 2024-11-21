@@ -3,6 +3,7 @@ package ru.baldursgate3.tgbot.bot.services;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class InlineKeyBoardService {
@@ -22,9 +24,11 @@ public class InlineKeyBoardService {
         return InlineKeyboardMarkup
                 .builder()
                 .keyboardRow(new InlineKeyboardRow(
-                        buttonService.standardButton("Создать нового персонажа", "createNewGameCharacter")))
+                        buttonService.standardButton("Создать нового персонажа",
+                                "createNewGameCharacter")))
                 .keyboardRow(new InlineKeyboardRow(
-                        buttonService.standardButton("Показать сохраненных персонажей", "getGameCharacterList"))).build();
+                        buttonService.standardButton("Показать сохраненных персонажей",
+                                "getGameCharacterList"))).build();
     }
 
     public InlineKeyboardMarkup getListOfSavedGameCharacter(Long userId) {
@@ -48,26 +52,43 @@ public class InlineKeyBoardService {
         return new InlineKeyboardMarkup(listOfRows);
     }
 
-    public InlineKeyboardMarkup getCharStatsKeyboard(String name, Short str, Short dex, Short con, Short intellect, Short wis, Short cha, String callBack) {
+    public InlineKeyboardMarkup getCharStatsKeyboard(String name,
+                                                     Short str,
+                                                     Short dex,
+                                                     Short con,
+                                                     Short intellect,
+                                                     Short wis,
+                                                     Short cha,
+                                                     String callBack) {
         return InlineKeyboardMarkup
                 .builder()
-                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("Имя: " + name, "setCharName")))
-                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("СИЛ: " + str, "setStr")))
-                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("ЛОВ: " + dex, "setDex")))
-                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("ВЫН: " + con, "setCon")))
-                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("ИНТ: " + intellect, "setInt")))
-                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("МУД: " + wis, "setWis")))
-                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("ХАР: " + cha, "setCha")))
-                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("Назад", callBack)))
-                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("Сохранить", "saveCharacter")))
+                .keyboardRow(new InlineKeyboardRow(
+                        buttonService.standardButton("Имя: " + name, "setCharName")))
+                .keyboardRow(new InlineKeyboardRow(
+                        buttonService.standardButton("СИЛ: " + str, "setStr")))
+                .keyboardRow(new InlineKeyboardRow(
+                        buttonService.standardButton("ЛОВ: " + dex, "setDex")))
+                .keyboardRow(new InlineKeyboardRow(
+                        buttonService.standardButton("ВЫН: " + con, "setCon")))
+                .keyboardRow(new InlineKeyboardRow(
+                        buttonService.standardButton("ИНТ: " + intellect, "setInt")))
+                .keyboardRow(new InlineKeyboardRow(
+                        buttonService.standardButton("МУД: " + wis, "setWis")))
+                .keyboardRow(new InlineKeyboardRow(
+                        buttonService.standardButton("ХАР: " + cha, "setCha")))
+                .keyboardRow(new InlineKeyboardRow(
+                        buttonService.standardButton("Назад", callBack),
+                        buttonService.standardButton("Сохранить", "saveCharacter")))
                 .build();
     }
 
     public InlineKeyboardMarkup getDeleteGameCharacterKeyboard() {
         return InlineKeyboardMarkup
                 .builder()
-                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("Назад", "backToCharacterList")))
-                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("Подтвердить", "deleteCharacter")))
+                .keyboardRow(new InlineKeyboardRow(buttonService.standardButton("Отмена",
+                        "backToCharacterList"),
+                        buttonService.standardButton("Подтвердить",
+                                "deleteCharacter")))
                 .build();
     }
 }

@@ -25,7 +25,12 @@ public class GameCharacterListState implements SessionState {
 
     @Override
     public void consumeMessage(Long userId, Long chatId, String message) {
-        SendMessage sendMessage = messageService.unknownCommandMessage(chatId);
+        SendMessage sendMessage;
+        if (messageService.editMessageNotPresent(chatId)) {
+            sendMessage = messageService.getCharacterList(chatId, userId);
+        } else {
+            sendMessage = messageService.unknownCommandMessage(chatId);
+        }
         applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
     }
 
@@ -39,14 +44,17 @@ public class GameCharacterListState implements SessionState {
         if (callData.matches("delete[\\d]+")) {
             Long gameCharacterId = Long.parseLong(callData.replace("delete", ""));
             sessionService.setGameCharacterId(userId, gameCharacterId);
-            sessionService.setSessionState(userId,UserState.CHARACTER_DELETE);
+            sessionService.setSessionState(userId, UserState.CHARACTER_DELETE);
             String gameCharacterName = gameCharacterService.getGameCharacterName(gameCharacterId);
             editMessageText = messageService.deleteCharacterConfirm(chatId, editMessage, gameCharacterName);
 
         } else if (callData.matches("edit[\\d]+")) {
-            GameCharacterDto edit = gameCharacterService.getGameCharacter(Long.parseLong(callData.replace("edit", "")));
+            Long gameCharacterId = Long.parseLong(callData.replace("edit", ""));
+            GameCharacterDto edit = gameCharacterService.getGameCharacter(gameCharacterId);
+            sessionService.setGameCharacterId(userId, edit.id());
             sessionService.setSessionState(userId, UserState.CHARACTER_EDIT);
             editMessageText = messageService.characterEdit(chatId, editMessage, edit);
+            log.info("{} редактирует персонажа {}", userName, edit);
 
         } else if (callData.equals("backToMainMenu")) {
             sessionService.setSessionState(userId, UserState.MAIN_MENU);

@@ -26,27 +26,37 @@ public class GameCharacterEditState implements SessionState {
     private final MessageService messageService;
     private final SessionService sessionService;
     private final GameCharacterService gameCharacterService;
-
     private final ApplicationEventPublisher applicationEventPublisher;
-
     private final Map<Long, String> previousCallback = new HashMap<>();
 
     @Override
     public void consumeMessage(Long userId, Long chatId, String message) {
-        if (previousCallback.get(userId) != null) {
-            Long gameCharacterId = sessionService.getGameCharacterId(userId);
-            GameCharacterDto edit = gameCharacterService.getGameCharacter(gameCharacterId);
-            edit = gameCharacterService.setValues(edit, previousCallback.get(userId), message);
-            gameCharacterService.save(edit);
-            previousCallback.remove(userId);
-
-            EditMessageText editMessageText = messageService.characterEdit(
-                    chatId, messageService.getEditMessage(chatId), edit);
-            applicationEventPublisher.publishEvent(new EditMessageTextEvent(this, editMessageText));
+        if (messageService.editMessageNotPresent(chatId)) {
+            SendMessage sendMessage = messageService.characterEdit(chatId,
+                    gameCharacterService.getGameCharacter(sessionService.getGameCharacterId(userId)));
+            applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
 
         } else {
-            SendMessage sendMessage = messageService.unknownCommandMessage(chatId);
-            applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
+            if (previousCallback.get(userId) != null) {
+                Long gameCharacterId = sessionService.getGameCharacterId(userId);
+                GameCharacterDto edit = gameCharacterService.getGameCharacter(gameCharacterId);
+                if(!previousCallback.get(userId).equals("setCharName")
+                        && message.chars().allMatch(Character::isDigit)){
+                    edit = gameCharacterService.setValues(edit, previousCallback.get(userId), message);
+                    gameCharacterService.save(edit);
+                    previousCallback.remove(userId);
+                    EditMessageText editMessageText = messageService.characterEdit(
+                            chatId, messageService.getEditMessage(chatId), edit);
+                    applicationEventPublisher.publishEvent(new EditMessageTextEvent(this, editMessageText));
+                } else {
+                    SendMessage sendMessage = messageService.messageMustBeNumeric(chatId);
+                    applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
+                }
+
+            } else {
+                SendMessage sendMessage = messageService.unknownCommandMessage(chatId);
+                applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
+            }
         }
 
     }

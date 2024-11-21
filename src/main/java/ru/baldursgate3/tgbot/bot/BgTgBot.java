@@ -10,6 +10,7 @@ import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessages;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
@@ -22,6 +23,9 @@ import ru.baldursgate3.tgbot.bot.event.SendMessageEvent;
 import ru.baldursgate3.tgbot.bot.services.MessageService;
 import ru.baldursgate3.tgbot.bot.services.SessionService;
 import ru.baldursgate3.tgbot.bot.services.StateHandlerService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -97,12 +101,11 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
 
     @EventListener
     public void deleteMessageEventHandler(DeleteMessagesEvent deleteMessage) { //запускается после каждого обновления сообщения
-        for (DeleteMessage delete : deleteMessage.getDeleteMessages()) {
-            try {
-                telegramClient.execute(delete);
-            } catch (TelegramApiException e) {
-                log.error("Ошибка удаления сообщения {}", e);
-            }
+        DeleteMessages deleteMessages = deleteMessage.getDeleteMessages();
+        try {
+            telegramClient.execute(deleteMessages);
+        } catch (TelegramApiException e) {
+            log.error("Ошибка удаления сообщения {}", e);
         }
     }
 }

@@ -25,9 +25,8 @@ public class MainMenuState implements SessionState {
     @Override
     public void consumeMessage(Long userId, Long chatId, String message) {
         SendMessage sendMessage;
-        if (messageService.getEditMessage(chatId) == null) {
+        if (messageService.editMessageNotPresent(chatId)) {
             sendMessage = messageService.greetingRegisteredUser(userId, userService.getUserName(userId));
-
         } else {
             sendMessage = messageService.unknownCommandMessage(chatId);
         }
@@ -47,7 +46,7 @@ public class MainMenuState implements SessionState {
             editMessageText = messageService.characterEdit(chatId, editMessage, newGameCharacterDto);
 
         } else if (callData.equals("getGameCharacterList")) {
-            sessionService.setSessionState(userId,UserState.CHARACTER_EDIT);
+            sessionService.setSessionState(userId,UserState.CHARACTER_LIST);
             editMessageText = messageService.getCharacterList(chatId, editMessage, userId);
 
         } else {

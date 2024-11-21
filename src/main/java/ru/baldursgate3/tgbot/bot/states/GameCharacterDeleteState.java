@@ -22,7 +22,16 @@ public class GameCharacterDeleteState implements SessionState {
 
     @Override
     public void consumeMessage(Long userId, Long chatId, String message) {
-        SendMessage sendMessage = messageService.unknownCommandMessage(chatId);
+
+        SendMessage sendMessage;
+        if (messageService.editMessageNotPresent(chatId)) {
+            String gameCharacterName = gameCharacterService.getGameCharacterName(
+                    sessionService.getGameCharacterId(userId));
+            sendMessage = messageService.deleteCharacterConfirm(chatId, gameCharacterName);
+
+        } else {
+            sendMessage = messageService.unknownCommandMessage(chatId);
+        }
         applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
     }
 
