@@ -9,9 +9,9 @@ import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsume
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessages;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -20,12 +20,8 @@ import ru.baldursgate3.tgbot.bot.config.Bg3Config;
 import ru.baldursgate3.tgbot.bot.event.DeleteMessagesEvent;
 import ru.baldursgate3.tgbot.bot.event.EditMessageTextEvent;
 import ru.baldursgate3.tgbot.bot.event.SendMessageEvent;
+import ru.baldursgate3.tgbot.bot.facade.StateFacade;
 import ru.baldursgate3.tgbot.bot.services.MessageService;
-import ru.baldursgate3.tgbot.bot.services.SessionService;
-import ru.baldursgate3.tgbot.bot.services.StateHandlerService;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @Component
@@ -33,13 +29,13 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
     private final TelegramClient telegramClient;
     private final MessageService messageService;
     private final Bg3Config bg3ConfigProperties;
-    private final StateHandlerService stateHandlerService;
+    private final StateFacade stateFacade;
 
     /*иначе не создаётся telegramClient.*/
-    public BgTgBot(MessageService messageService, Bg3Config bg3ConfigProperties, StateHandlerService stateHandlerService) {
+    public BgTgBot(MessageService messageService, Bg3Config bg3ConfigProperties, StateFacade stateFacade) {
         this.messageService = messageService;
         this.bg3ConfigProperties = bg3ConfigProperties;
-        this.stateHandlerService = stateHandlerService;
+        this.stateFacade = stateFacade;
         telegramClient = new OkHttpTelegramClient(getBotToken());
     }
 
@@ -57,19 +53,19 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
     public void consume(Update update) {
 
         if (update.hasMessage()) {
-            Long userId = update.getMessage().getFrom().getId();
-            Long chatId = update.getMessage().getChatId();
-            String message = update.getMessage().getText();
-            Long messageId = update.getMessage().getMessageId().longValue();
-            messageService.putDeleteMessage(chatId, messageId);
-            stateHandlerService.getSessionState(userId)
-                    .consumeMessage(userId, chatId, message);
+            Message msg = update.getMessage();
+            stateFacade.consumeMessage(
+                    msg.getFrom().getId(),
+                    msg.getChatId(),
+                    msg.getMessageId().longValue(),
+                    msg.getText());
+
         } else if (update.hasCallbackQuery()) {
-            Long userId = update.getCallbackQuery().getFrom().getId();
-            Long chatId = update.getCallbackQuery().getMessage().getChatId();
-            String callData = update.getCallbackQuery().getData();
-            stateHandlerService.getSessionState(userId)
-                    .consumeCallbackQuery(userId, chatId, callData);
+            CallbackQuery cbq = update.getCallbackQuery();
+            stateFacade.consumeCallbackQuery(
+                    cbq.getFrom().getId(),
+                    cbq.getMessage().getChatId(),
+                    cbq.getData());
         }
     }
 
