@@ -1,6 +1,7 @@
 package ru.baldursgate3.tgbot.bot.services;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -8,11 +9,10 @@ import ru.baldursgate3.tgbot.bot.model.GameCharacterDto;
 import ru.baldursgate3.tgbot.bot.model.SessionDto;
 import ru.baldursgate3.tgbot.bot.model.UserDto;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RestTemplateService {
@@ -21,22 +21,17 @@ public class RestTemplateService {
     private String HOST;
 
     /*---------------USER---------------*/
-    public String getUser(Long tgId) {
-        String url = HOST + "/user";
-        Map<String, String> request = new HashMap<>();
-        request.put("tgUserId", tgId.toString());
-        return restTemplate.getForObject(url, String.class, request);
-    }
 
     public UserDto getUserByTgId(Long tgId) {
         String url = HOST + "/user/tgid/" + tgId;
         return restTemplate.getForObject(url, UserDto.class);
     }
 
-    public String registerUser(Long id, String name) {
-        String url = HOST + "/user";
-        UserDto user = new UserDto(name, id);
-        return restTemplate.postForObject(url, user, String.class);
+    public void registerUser(Long id, String name) {
+        String url = HOST + "/user/tgid/" + id;
+        Optional<String> nameOpt = Optional.of(name);
+        log.info("имя нового пользователя {}", nameOpt);
+        restTemplate.put(url, nameOpt);
     }
 
     /*---------------GAME CHARACTER---------------*/

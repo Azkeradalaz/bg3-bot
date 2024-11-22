@@ -25,13 +25,9 @@ public class GameCharacterListState implements SessionState {
 
     @Override
     public void consumeMessage(Long userId, Long chatId, String message) {
-        SendMessage sendMessage;
-        if (messageService.editMessageNotPresent(chatId)) {
-            sendMessage = messageService.getCharacterList(chatId, userId);
-        } else {
-            sendMessage = messageService.unknownCommandMessage(chatId);
-        }
-        applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
+        SendMessage sendMessage = messageService.unknownCommandMessage(chatId);
+        applicationEventPublisher
+                .publishEvent(new SendMessageEvent(this, sendMessage));
     }
 
     @Override
@@ -43,29 +39,45 @@ public class GameCharacterListState implements SessionState {
 
         if (callData.matches("delete[\\d]+")) {
             Long gameCharacterId = Long.parseLong(callData.replace("delete", ""));
-            sessionService.setGameCharacterId(userId, gameCharacterId);
-            sessionService.setSessionState(userId, UserState.CHARACTER_DELETE);
             String gameCharacterName = gameCharacterService.getGameCharacterName(gameCharacterId);
+
+            sessionService
+                    .setGameCharacterId(userId, gameCharacterId);
+            sessionService
+                    .setSessionState(userId, UserState.CHARACTER_DELETE);
             editMessageText = messageService.deleteCharacterConfirm(chatId, editMessage, gameCharacterName);
 
         } else if (callData.matches("edit[\\d]+")) {
             Long gameCharacterId = Long.parseLong(callData.replace("edit", ""));
             GameCharacterDto edit = gameCharacterService.getGameCharacter(gameCharacterId);
-            sessionService.setGameCharacterId(userId, edit.id());
-            sessionService.setSessionState(userId, UserState.CHARACTER_EDIT);
-            editMessageText = messageService.characterEdit(chatId, editMessage, edit);
+            sessionService
+                    .setGameCharacterId(userId, edit.id());
+            sessionService
+                    .setSessionState(userId, UserState.CHARACTER_EDIT);
             log.info("{} редактирует персонажа {}", userName, edit);
+            editMessageText = messageService.characterEdit(chatId, editMessage, edit);
 
         } else if (callData.equals("backToMainMenu")) {
-            sessionService.setSessionState(userId, UserState.MAIN_MENU);
+            sessionService
+                    .setSessionState(userId, UserState.MAIN_MENU);
             editMessageText = messageService.backToMainMenuMessage(chatId, userName, editMessage);
+
         } else {
             SendMessage sendMessage = messageService.unknownCommandMessage(chatId);
-            applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
+            applicationEventPublisher
+                    .publishEvent(new SendMessageEvent(this, sendMessage));
         }
 
         if (editMessageText != null) {
-            applicationEventPublisher.publishEvent(new EditMessageTextEvent(this, editMessageText));
+            applicationEventPublisher
+                    .publishEvent(new EditMessageTextEvent(this, editMessageText));
         }
+    }
+
+    @Override
+    public void sendDefaultMessage(Long userId, Long chatId) {
+        SendMessage sendMessage = messageService.getCharacterList(chatId, userId);
+        applicationEventPublisher
+                .publishEvent(new SendMessageEvent(this, sendMessage));
     }
 }

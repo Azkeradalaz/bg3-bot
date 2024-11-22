@@ -24,13 +24,9 @@ public class MainMenuState implements SessionState {
 
     @Override
     public void consumeMessage(Long userId, Long chatId, String message) {
-        SendMessage sendMessage;
-        if (messageService.editMessageNotPresent(chatId)) {
-            sendMessage = messageService.greetingRegisteredUser(userId, userService.getUserName(userId));
-        } else {
-            sendMessage = messageService.unknownCommandMessage(chatId);
-        }
-        applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
+        SendMessage sendMessage = messageService.unknownCommandMessage(chatId);
+        applicationEventPublisher
+                .publishEvent(new SendMessageEvent(this, sendMessage));
     }
 
     @Override
@@ -41,12 +37,15 @@ public class MainMenuState implements SessionState {
         if (callData.equals("createNewGameCharacter")) {
             GameCharacterDto newGameCharacterDto = gameCharacterService.getDefault(userService.getUserDto(userId));
             Long gameCharacterId = gameCharacterService.save(newGameCharacterDto);
-            sessionService.setGameCharacterId(userId, gameCharacterId);
-            sessionService.setSessionState(userId,UserState.CHARACTER_EDIT);
+            sessionService
+                    .setGameCharacterId(userId, gameCharacterId);
+            sessionService
+                    .setSessionState(userId, UserState.CHARACTER_EDIT);
             editMessageText = messageService.characterEdit(chatId, editMessage, newGameCharacterDto);
 
         } else if (callData.equals("getGameCharacterList")) {
-            sessionService.setSessionState(userId,UserState.CHARACTER_LIST);
+            sessionService
+                    .setSessionState(userId, UserState.CHARACTER_LIST);
             editMessageText = messageService.getCharacterList(chatId, editMessage, userId);
 
         } else {
@@ -54,6 +53,14 @@ public class MainMenuState implements SessionState {
                     this, messageService.unknownCommandMessage(chatId)));
         }
 
-        applicationEventPublisher.publishEvent(new EditMessageTextEvent(this, editMessageText));
+        applicationEventPublisher
+                .publishEvent(new EditMessageTextEvent(this, editMessageText));
+    }
+
+    @Override
+    public void sendDefaultMessage(Long userId, Long chatId) {
+        SendMessage sendMessage = messageService.greetingRegisteredUser(userId, userService.getUserName(userId));
+        applicationEventPublisher
+                .publishEvent(new SendMessageEvent(this, sendMessage));
     }
 }

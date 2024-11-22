@@ -65,6 +65,7 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
             stateFacade.consumeCallbackQuery(
                     cbq.getFrom().getId(),
                     cbq.getMessage().getChatId(),
+                    cbq.getMessage().getMessageId().longValue(),
                     cbq.getData());
         }
     }
@@ -96,12 +97,14 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
     }
 
     @EventListener
-    public void deleteMessageEventHandler(DeleteMessagesEvent deleteMessage) { //запускается после каждого обновления сообщения
+    public void deleteMessageEventHandler(DeleteMessagesEvent deleteMessage) {
         DeleteMessages deleteMessages = deleteMessage.getDeleteMessages();
-        try {
-            telegramClient.execute(deleteMessages);
-        } catch (TelegramApiException e) {
-            log.error("Ошибка удаления сообщения {}", e);
+        if (deleteMessages != null) {
+            try {
+                telegramClient.execute(deleteMessages);
+            } catch (TelegramApiException e) {
+                log.error("Ошибка удаления сообщения {}", e);
+            }
         }
     }
 }
