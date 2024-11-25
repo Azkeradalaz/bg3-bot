@@ -9,8 +9,9 @@ import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsume
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessages;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -19,22 +20,22 @@ import ru.baldursgate3.tgbot.bot.config.Bg3Config;
 import ru.baldursgate3.tgbot.bot.event.DeleteMessagesEvent;
 import ru.baldursgate3.tgbot.bot.event.EditMessageTextEvent;
 import ru.baldursgate3.tgbot.bot.event.SendMessageEvent;
+import ru.baldursgate3.tgbot.bot.facade.StateFacade;
 import ru.baldursgate3.tgbot.bot.services.MessageService;
-import ru.baldursgate3.tgbot.bot.services.UserSessionStateService;
 
 @Slf4j
 @Component
 public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
     private final TelegramClient telegramClient;
     private final MessageService messageService;
-    private final UserSessionStateService userSessionStateService;
     private final Bg3Config bg3ConfigProperties;
+    private final StateFacade stateFacade;
 
     /*иначе не создаётся telegramClient.*/
-    public BgTgBot(MessageService messageService, UserSessionStateService userSessionStateService, Bg3Config bg3ConfigProperties) {
+    public BgTgBot(MessageService messageService, Bg3Config bg3ConfigProperties, StateFacade stateFacade) {
         this.messageService = messageService;
-        this.userSessionStateService = userSessionStateService;
         this.bg3ConfigProperties = bg3ConfigProperties;
+        this.stateFacade = stateFacade;
         telegramClient = new OkHttpTelegramClient(getBotToken());
     }
 
@@ -52,15 +53,20 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
     public void consume(Update update) {
 
         if (update.hasMessage()) {
-            Long userId = update.getMessage().getFrom().getId();
-            Long chatId = update.getMessage().getChatId();
-            Long messageId = update.getMessage().getMessageId().longValue();
-            messageService.putDeleteMessage(chatId,messageId);
-            userSessionStateService.getSessionState(userId, chatId).consumeMessage(update);
+            Message msg = update.getMessage();
+            stateFacade.consumeMessage(
+                    msg.getFrom().getId(),
+                    msg.getChatId(),
+                    msg.getMessageId().longValue(),
+                    msg.getText());
+
         } else if (update.hasCallbackQuery()) {
-            Long userId = update.getCallbackQuery().getFrom().getId();
-            Long chatId = update.getCallbackQuery().getMessage().getChatId();
-            userSessionStateService.getSessionState(userId, chatId).consumeCallbackQuery(update);
+            CallbackQuery cbq = update.getCallbackQuery();
+            stateFacade.consumeCallbackQuery(
+                    cbq.getFrom().getId(),
+                    cbq.getMessage().getChatId(),
+                    cbq.getMessage().getMessageId().longValue(),
+                    cbq.getData());
         }
     }
 
@@ -91,10 +97,11 @@ public class BgTgBot implements SpringLongPollingBot, LongPollingSingleThreadUpd
     }
 
     @EventListener
-    public void deleteMessageEventHandler(DeleteMessagesEvent deleteMessage) { //запускается после каждого обновления сообщения
-        for (DeleteMessage delete : deleteMessage.getDeleteMessages()) {
+    public void deleteMessageEventHandler(DeleteMessagesEvent deleteMessage) {
+        DeleteMessages deleteMessages = deleteMessage.getDeleteMessages();
+        if (deleteMessages != null) {
             try {
-                telegramClient.execute(delete);
+                telegramClient.execute(deleteMessages);
             } catch (TelegramApiException e) {
                 log.error("Ошибка удаления сообщения {}", e);
             }
