@@ -18,14 +18,10 @@ public class StateFacade {
         messageService.putDeleteMessage(chatId, messageId);
 
         if (messageService.editMessageNotPresent(chatId)) {
-            stateHandlerService
-                    .getSessionState(userId)
-                    .sendDefaultMessage(userId, chatId);
+            stateHandlerService.getSessionState(userId).sendDefaultMessage(userId, chatId);
 
         } else {
-            stateHandlerService
-                    .getSessionState(userId)
-                    .consumeMessage(userId, chatId, message);
+            stateHandlerService.getSessionState(userId).consumeMessage(userId, chatId, message);
         }
     }
 
@@ -33,12 +29,10 @@ public class StateFacade {
 
         if (messageService.editMessageNotPresent(chatId)) {
             messageService.putDeleteMessage(chatId, messageId);
-            stateHandlerService.getSessionState(userId)
-                    .sendDefaultMessage(userId, chatId);
+            stateHandlerService.getSessionState(userId).sendDefaultMessage(userId, chatId);
 
         } else if(messageService.getEditMessage(chatId).equals(messageId)){
-            stateHandlerService.getSessionState(userId)
-                    .consumeCallbackQuery(userId, chatId, callData);
+            stateHandlerService.getSessionState(userId).consumeCallbackQuery(userId, chatId, callData);
 
         } else {
             messageService.putDeleteMessage(chatId, messageId);

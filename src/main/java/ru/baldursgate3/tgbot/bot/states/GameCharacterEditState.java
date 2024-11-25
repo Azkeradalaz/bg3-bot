@@ -33,30 +33,24 @@ public class GameCharacterEditState implements SessionState {
     public void consumeMessage(Long userId, Long chatId, String message) {
 
         if (previousCallback.get(userId) != null) {
-            Long gameCharacterId = sessionService
-                    .getGameCharacterId(userId);
-            GameCharacterDto edit = gameCharacterService
-                    .getGameCharacter(gameCharacterId);
+            Long gameCharacterId = sessionService.getGameCharacterId(userId);
+            GameCharacterDto edit = gameCharacterService.getGameCharacter(gameCharacterId);
 
             if ((!previousCallback.get(userId).equals("setCharName")
                     && message.chars().allMatch(Character::isDigit))
                     || previousCallback.get(userId).equals("setCharName")) {
-                edit = gameCharacterService
-                        .setValues(edit, previousCallback.get(userId), message);
+                edit = gameCharacterService.setValues(edit, previousCallback.get(userId), message);
 
                 gameCharacterService.save(edit);
                 previousCallback.remove(userId);
 
-                EditMessageText editMessageText = messageService
-                        .characterEdit(chatId, messageService.getEditMessage(chatId), edit);
-                applicationEventPublisher
-                        .publishEvent(new EditMessageTextEvent(this, editMessageText));
+                EditMessageText editMessageText = messageService.characterEdit(
+                        chatId, messageService.getEditMessage(chatId), edit);
+                applicationEventPublisher.publishEvent(new EditMessageTextEvent(this, editMessageText));
 
             } else {
-                SendMessage sendMessage = messageService
-                        .messageMustBeNumeric(chatId);
-                applicationEventPublisher
-                        .publishEvent(new SendMessageEvent(this, sendMessage));
+                SendMessage sendMessage = messageService.messageMustBeNumeric(chatId);
+                applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
             }
 
         } else {
@@ -79,32 +73,23 @@ public class GameCharacterEditState implements SessionState {
         if (callData.matches("set[a-zA-Z]+")) {
             previousCallback.put(userId, callData);
             log.info("прошлый колбэк {}", previousCallback.get(userId));
-            sendMessage = messageService
-                    .statChangeMessage(chatId, callData);
+            sendMessage = messageService.statChangeMessage(chatId, callData);
 
         } else if (callData.equals("saveCharacter")) {
-            sessionService
-                    .setGameCharacterId(userId, null);
-            sessionService
-                    .setSessionState(userId, UserState.MAIN_MENU);
-            editMessageText = messageService
-                    .backToMainMenuMessage(chatId, userName, editMessage);
+            sessionService.setGameCharacterId(userId, null);
+            sessionService.setSessionState(userId, UserState.MAIN_MENU);
+            editMessageText = messageService.backToMainMenuMessage(chatId, userName, editMessage);
 
         } else if (callData.equals("backToMainMenu")) {
             Long gameCharacterId = sessionService.getGameCharacterId(userId);
-            sessionService
-                    .setGameCharacterId(userId, null);
-            sessionService
-                    .setSessionState(userId, UserState.MAIN_MENU);
-            gameCharacterService
-                    .delete(gameCharacterId);
+            sessionService.setGameCharacterId(userId, null);
+            sessionService.setSessionState(userId, UserState.MAIN_MENU);
+            gameCharacterService.delete(gameCharacterId);
             editMessageText = messageService.backToMainMenuMessage(chatId, userName, editMessage);
 
         } else if (callData.equals("backToCharacterList")) {
-            sessionService
-                    .setGameCharacterId(userId, null);
-            sessionService
-                    .setSessionState(userId, UserState.CHARACTER_LIST);
+            sessionService.setGameCharacterId(userId, null);
+            sessionService.setSessionState(userId, UserState.CHARACTER_LIST);
             editMessageText = messageService.getCharacterList(chatId, editMessage, userId);
 
         } else {
@@ -112,22 +97,17 @@ public class GameCharacterEditState implements SessionState {
         }
 
         if (sendMessage != null) {
-            applicationEventPublisher
-                    .publishEvent(new SendMessageEvent(this, sendMessage));
+            applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
         }
         if (editMessageText != null) {
-            applicationEventPublisher
-                    .publishEvent(new EditMessageTextEvent(this, editMessageText));
+            applicationEventPublisher.publishEvent(new EditMessageTextEvent(this, editMessageText));
         }
     }
 
     @Override
     public void sendDefaultMessage(Long userId, Long chatId) {
-        SendMessage sendMessage = messageService.characterEdit(chatId,
-                gameCharacterService
-                        .getGameCharacter(
+        SendMessage sendMessage = messageService.characterEdit(chatId, gameCharacterService.getGameCharacter(
                                 sessionService.getGameCharacterId(userId)));
-        applicationEventPublisher
-                .publishEvent(new SendMessageEvent(this, sendMessage));
+        applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
     }
 }

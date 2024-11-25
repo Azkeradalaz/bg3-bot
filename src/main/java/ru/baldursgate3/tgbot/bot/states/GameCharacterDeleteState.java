@@ -23,8 +23,7 @@ public class GameCharacterDeleteState implements SessionState {
     @Override
     public void consumeMessage(Long userId, Long chatId, String message) {
         SendMessage sendMessage = messageService.unknownCommandMessage(chatId);
-        applicationEventPublisher
-                .publishEvent(new SendMessageEvent(this, sendMessage));
+        applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
     }
 
     @Override
@@ -33,31 +32,24 @@ public class GameCharacterDeleteState implements SessionState {
         EditMessageText editMessageText = null;
 
         if (callData.equals("backToCharacterList")) {
-            sessionService
-                    .setSessionState(userId, UserState.CHARACTER_LIST);
+            sessionService.setSessionState(userId, UserState.CHARACTER_LIST);
             editMessageText = messageService.getCharacterList(chatId, editMessage, userId);
 
         } else if (callData.equals("deleteCharacter")) {
             Long gameCharacterId = sessionService.getGameCharacterId(userId);
-            sessionService
-                    .setSessionState(userId, UserState.CHARACTER_LIST);
-            sessionService
-                    .setGameCharacterId(userId, null);
-            gameCharacterService
-                    .delete(gameCharacterId);
+            sessionService.setSessionState(userId, UserState.CHARACTER_LIST);
+            sessionService.setGameCharacterId(userId, null);
+            gameCharacterService.delete(gameCharacterId);
             editMessageText = messageService.getCharacterList(chatId, editMessage, userId);
 
         } else {
             SendMessage sendMessage = messageService.unknownCommandMessage(chatId);
-            applicationEventPublisher
-                    .publishEvent(new SendMessageEvent(this, sendMessage));
+            applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
         }
 
         if (editMessageText != null) {
-            applicationEventPublisher
-                    .publishEvent(new EditMessageTextEvent(this, editMessageText));
+            applicationEventPublisher.publishEvent(new EditMessageTextEvent(this, editMessageText));
         }
-
     }
 
     @Override

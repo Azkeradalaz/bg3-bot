@@ -26,8 +26,7 @@ public class GameCharacterListState implements SessionState {
     @Override
     public void consumeMessage(Long userId, Long chatId, String message) {
         SendMessage sendMessage = messageService.unknownCommandMessage(chatId);
-        applicationEventPublisher
-                .publishEvent(new SendMessageEvent(this, sendMessage));
+        applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
     }
 
     @Override
@@ -41,19 +40,15 @@ public class GameCharacterListState implements SessionState {
             Long gameCharacterId = Long.parseLong(callData.replace("delete", ""));
             String gameCharacterName = gameCharacterService.getGameCharacterName(gameCharacterId);
 
-            sessionService
-                    .setGameCharacterId(userId, gameCharacterId);
-            sessionService
-                    .setSessionState(userId, UserState.CHARACTER_DELETE);
+            sessionService.setGameCharacterId(userId, gameCharacterId);
+            sessionService.setSessionState(userId, UserState.CHARACTER_DELETE);
             editMessageText = messageService.deleteCharacterConfirm(chatId, editMessage, gameCharacterName);
 
         } else if (callData.matches("edit[\\d]+")) {
             Long gameCharacterId = Long.parseLong(callData.replace("edit", ""));
             GameCharacterDto edit = gameCharacterService.getGameCharacter(gameCharacterId);
-            sessionService
-                    .setGameCharacterId(userId, edit.id());
-            sessionService
-                    .setSessionState(userId, UserState.CHARACTER_EDIT);
+            sessionService.setGameCharacterId(userId, edit.id());
+            sessionService.setSessionState(userId, UserState.CHARACTER_EDIT);
             log.info("{} редактирует персонажа {}", userName, edit);
             editMessageText = messageService.characterEdit(chatId, editMessage, edit);
 
@@ -64,20 +59,17 @@ public class GameCharacterListState implements SessionState {
 
         } else {
             SendMessage sendMessage = messageService.unknownCommandMessage(chatId);
-            applicationEventPublisher
-                    .publishEvent(new SendMessageEvent(this, sendMessage));
+            applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
         }
 
         if (editMessageText != null) {
-            applicationEventPublisher
-                    .publishEvent(new EditMessageTextEvent(this, editMessageText));
+            applicationEventPublisher.publishEvent(new EditMessageTextEvent(this, editMessageText));
         }
     }
 
     @Override
     public void sendDefaultMessage(Long userId, Long chatId) {
         SendMessage sendMessage = messageService.getCharacterList(chatId, userId);
-        applicationEventPublisher
-                .publishEvent(new SendMessageEvent(this, sendMessage));
+        applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
     }
 }

@@ -25,32 +25,22 @@ public class RegisterState implements SessionState {
     @Override
     public void consumeMessage(Long userId, Long chatId, String message) {
         Long editMessageId = messageService.getEditMessage(chatId);
-        userService
-                .registerUser(userId, message);
-        sessionService
-                .setSessionState(userId, UserState.MAIN_MENU);
-        applicationEventPublisher.publishEvent(
-                new EditMessageTextEvent(
-                        this,
-                        messageService.backToMainMenuMessage(
-                                chatId,
-                                message,
-                                editMessageId)));
+        userService.registerUser(userId, message);
+        sessionService.setSessionState(userId, UserState.MAIN_MENU);
+        applicationEventPublisher.publishEvent(new EditMessageTextEvent(
+                this, messageService.backToMainMenuMessage(chatId, message, editMessageId)));
     }
 
     @Override
     public void consumeCallbackQuery(Long userId, Long chatId, String callData) {
         SendMessage sendMessage = messageService.unknownCommandMessage(chatId);
-        applicationEventPublisher
-                .publishEvent(new SendMessageEvent(this, sendMessage));
+        applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
     }
 
     @Override
     public void sendDefaultMessage(Long userId, Long chatId) {
         log.info("Новый пользователь на регистрацию {}", userId);
-        applicationEventPublisher
-                .publishEvent(new SendMessageEvent(
-                        this,
-                        messageService.greetingNonRegisteredUser(chatId)));
+        applicationEventPublisher.publishEvent(new SendMessageEvent(
+                        this, messageService.greetingNonRegisteredUser(chatId)));
     }
 }
