@@ -12,6 +12,10 @@ import ru.baldursgate3.tgbot.bot.event.SendMessageEvent;
 import ru.baldursgate3.tgbot.bot.model.GameCharacterDto;
 import ru.baldursgate3.tgbot.bot.services.*;
 
+import java.util.Map;
+import java.util.function.BiConsumer;
+
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -21,6 +25,12 @@ public class MainMenuState implements SessionState {
     private final SessionService sessionService;
     private final GameCharacterService gameCharacterService;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private static final String CREATE_NEW_GAME_CHARACTER = "createNewGameCharacter";
+    private static final String GET_GAME_CHARACTER_LIST = "getGameCharacterList";
+    private final Map<String, BiConsumer> commands = Map.of(
+            CREATE_NEW_GAME_CHARACTER, createNewGameCharacter(),
+            GET_GAME_CHARACTER_LIST, getGameCharacterList()
+    );
 
     @Override
     public void consumeMessage(Long userId, Long chatId, String message) {
@@ -30,30 +40,38 @@ public class MainMenuState implements SessionState {
 
     @Override
     public void consumeCallbackQuery(Long userId, Long chatId, String callData) {
-        Long editMessage = messageService.getEditMessage(chatId);
-        EditMessageText editMessageText = null;
-
-        if (callData.equals("createNewGameCharacter")) {
-            GameCharacterDto newGameCharacterDto = gameCharacterService.getDefault(userService.getUserDto(userId));
-            Long gameCharacterId = gameCharacterService.save(newGameCharacterDto);
-            sessionService.setGameCharacterId(userId, gameCharacterId);
-            sessionService.setSessionState(userId, UserState.CHARACTER_EDIT);
-            editMessageText = messageService.characterEdit(chatId, editMessage, newGameCharacterDto);
-
-        } else if (callData.equals("getGameCharacterList")) {
-            sessionService.setSessionState(userId, UserState.CHARACTER_LIST);
-            editMessageText = messageService.getCharacterList(chatId, editMessage, userId);
-
+        if (commands.containsKey(callData)) {
+            commands.get(callData).accept(userId, chatId);
         } else {
             applicationEventPublisher.publishEvent(new SendMessageEvent(
                     this, messageService.unknownCommandMessage(chatId)));
         }
-        applicationEventPublisher.publishEvent(new EditMessageTextEvent(this, editMessageText));
     }
 
     @Override
     public void sendDefaultMessage(Long userId, Long chatId) {
         SendMessage sendMessage = messageService.greetingRegisteredUser(userId, userService.getUserName(userId));
         applicationEventPublisher.publishEvent(new SendMessageEvent(this, sendMessage));
+    }
+
+    private BiConsumer<Long, Long> createNewGameCharacter() {
+        return (userId, chatId) -> {
+            Long editMessage = messageService.getEditMessage(chatId);
+            GameCharacterDto newGameCharacterDto = gameCharacterService.getDefault(userService.getUserDto(userId));
+            Long gameCharacterId = gameCharacterService.save(newGameCharacterDto);
+            sessionService.setGameCharacterId(userId, gameCharacterId);
+            sessionService.setSessionState(userId, UserState.CHARACTER_EDIT);
+            EditMessageText editMessageText = messageService.characterEdit(chatId, editMessage, newGameCharacterDto);
+            applicationEventPublisher.publishEvent(new EditMessageTextEvent(this, editMessageText));
+        };
+    }
+
+    private BiConsumer<Long, Long> getGameCharacterList() {
+        return (userId, chatId) -> {
+            Long editMessage = messageService.getEditMessage(chatId);
+            sessionService.setSessionState(userId, UserState.CHARACTER_LIST);
+            EditMessageText editMessageText = messageService.getCharacterList(chatId, editMessage, userId);
+            applicationEventPublisher.publishEvent(new EditMessageTextEvent(this, editMessageText));
+        };
     }
 }
